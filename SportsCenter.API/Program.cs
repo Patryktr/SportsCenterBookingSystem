@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using SportsCenter.API.Extentions;
 using SportsCenter.Infrastructure.Persistence;
+using SportsCenter.Application.Features.Customers.CreateCustomer;
 
 namespace SportsCenter.API;
 
@@ -14,8 +16,8 @@ public class Program
         {
             options.UseSqlite(builder.Configuration.GetConnectionString("SportsCenterDb"));
         });
+        builder.Services.AddScoped<CreateCustomerHandler>();
 
-     
         builder.Services.AddControllers();
 
         // Swagger / OpenAPI
@@ -33,6 +35,8 @@ public class Program
         app.UseHttpsRedirection();
 
         app.MapControllers(); // na p�niej, gdy dodamy kontrolery
+
+        app.MapDiscoveredEndpoints();
 
         // Na razie prosty endpoint testowy
         app.MapGet("/ping", () => "pong");
