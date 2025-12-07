@@ -1,14 +1,15 @@
-﻿using SportsCenter.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SportsCenter.Application.Abstractions;
+using SportsCenter.Domain.Entities;
 using SportsCenter.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace SportsCenter.Application.Features.Customers.CreateCustomer;
-public class CreateCustomerHandler
+public class CreateCustomerHandler: IHandlerDefinition
 {
     private readonly SportsCenterDbContext _db;
 

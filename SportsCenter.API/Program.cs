@@ -16,9 +16,9 @@ public class Program
         {
             options.UseSqlite(builder.Configuration.GetConnectionString("SportsCenterDb"));
         });
-        builder.Services.AddScoped<CreateCustomerHandler>();
 
-        builder.Services.AddControllers();
+
+        builder.Services.RegisterDiscoveredHandlers();
 
         // Swagger / OpenAPI
         builder.Services.AddEndpointsApiExplorer();
@@ -34,12 +34,11 @@ public class Program
 
         app.UseHttpsRedirection();
 
-        app.MapControllers(); // na p�niej, gdy dodamy kontrolery
+       // na p�niej, gdy dodamy kontrolery
 
         app.MapDiscoveredEndpoints();
 
-        // Na razie prosty endpoint testowy
-        app.MapGet("/ping", () => "pong");
+    
 
         app.Run();
     }
