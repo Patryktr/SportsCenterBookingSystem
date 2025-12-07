@@ -16,6 +16,12 @@ public class Program
         {
             options.UseSqlite(builder.Configuration.GetConnectionString("SportsCenterDb"));
         });
+        builder.Services.AddScoped<CreateCustomerHandler>();
+        builder.Services.AddScoped<CreateFacilityHandler>();
+        builder.Services.AddScoped<GetFacilitiesHandler>();
+        builder.Services.AddScoped<GetFacilityByIdHandler>();
+        builder.Services.AddScoped<UpdateFacilityHandler>();
+        builder.Services.AddScoped<DeleteFacilityHandler>();
 
 
         builder.Services.RegisterDiscoveredHandlers();
@@ -34,11 +40,12 @@ public class Program
 
         app.UseHttpsRedirection();
 
-       // na p�niej, gdy dodamy kontrolery
+        app.MapControllers(); // na p�niej, gdy dodamy kontrolery
 
         app.MapDiscoveredEndpoints();
 
-    
+        // Na razie prosty endpoint testowy
+        app.MapGet("/ping", () => "pong");
 
         app.Run();
     }
