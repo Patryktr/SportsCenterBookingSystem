@@ -13,13 +13,18 @@ public class GetFacilityByIdHandler : IHandlerDefinition
         _db = db;
     }
 
-    public async Task<GetFacilityByIdResponse?> Handle(int id)
+    public async Task<GetFacilityByIdResponse?> Handle(int id, CancellationToken ct = default)
     {
-        var f = await _db.Facilities.FirstOrDefaultAsync(x => x.Id == id);
+        var f = await _db.Facilities.FirstOrDefaultAsync(x => x.Id == id, ct);
 
         return f == null
             ? null
             : new GetFacilityByIdResponse(
-                f.Id, f.Name, f.SportType, f.MaxPlayers, f.PricePerHour, f.IsActive);
+                f.Id,
+                f.Name,
+                f.SportType,
+                f.MaxPlayers,
+                f.PricePerHour,
+                f.IsActive);
     }
 }

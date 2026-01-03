@@ -2,11 +2,6 @@
 using SportsCenter.Application.Abstractions;
 using SportsCenter.Domain.Entities;
 using SportsCenter.Infrastructure.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SportsCenter.Application.Features.Customers.CreateCustomer;
 
@@ -19,8 +14,7 @@ public class CreateCustomerHandler : IHandlerDefinition
         _db = db;
     }
 
-
-    public async Task<CreateCustomerResponse> Handle(CreateCustomerRequest request)
+    public async Task<CreateCustomerResponse> Handle(CreateCustomerRequest request, CancellationToken ct = default)
     {
         var customer = new Customer
         {
@@ -31,7 +25,7 @@ public class CreateCustomerHandler : IHandlerDefinition
         };
 
         _db.Customers.Add(customer);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         return new CreateCustomerResponse
         {
