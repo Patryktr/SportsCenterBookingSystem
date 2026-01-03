@@ -1,12 +1,6 @@
 ﻿using SportsCenter.Infrastructure.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SportsCenter.Application.Abstractions;
-using SportsCenter.Application.Features.Customers.UpdateCustomer;
 
 namespace SportsCenter.Application.Features.Customers.UpdateCustomer;
 
@@ -19,10 +13,10 @@ public class UpdateCustomerHandler : IHandlerDefinition
         _db = db;
     }
 
-    public async Task<bool> Handle(Guid publicId, UpdateCustomerRequest request)
+    public async Task<bool> Handle(Guid publicId, UpdateCustomerRequest request, CancellationToken ct = default)
     {
         var customer = await _db.Customers
-            .SingleOrDefaultAsync(c => c.PublicId == publicId);
+            .SingleOrDefaultAsync(c => c.PublicId == publicId, ct);
 
         if (customer is null)
             return false;
@@ -32,7 +26,7 @@ public class UpdateCustomerHandler : IHandlerDefinition
         customer.Email = request.Email;
         customer.Phone = request.Phone;
 
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
         return true;
     }
 }
