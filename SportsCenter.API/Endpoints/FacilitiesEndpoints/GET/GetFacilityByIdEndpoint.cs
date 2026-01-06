@@ -13,6 +13,7 @@ public class GetFacilityByIdEndpoint : IEndpointDefinition
                         ? Results.Ok(f)
                         : Results.NotFound())
             .WithName("GetFacilityById")
-            .WithTags("Facilities");
+            .WithTags("Facilities")
+            .RequireRateLimiting("per-customer");
     }
 }
