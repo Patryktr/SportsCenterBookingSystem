@@ -27,7 +27,7 @@ namespace SportsCenter.Domain.Entities;
         public BookingStatus Status { get; set; } = BookingStatus.Active;
         public BookingType Type { get; set; } = BookingType.Exclusive;
 
-       // public byte[] RowVersion { get; set; } = Array.Empty<byte>();
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
         public Facility Facility { get; set; } = default!;
 
