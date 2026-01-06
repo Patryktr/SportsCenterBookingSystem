@@ -11,10 +11,10 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // DbContext + SQLite
+        // DbContext + SQL Server
         builder.Services.AddDbContext<SportsCenterDbContext>(options =>
         {
-            options.UseSqlite(builder.Configuration.GetConnectionString("SportsCenterDb"));
+            options.UseSqlServer(builder.Configuration.GetConnectionString("SportsCenterDb"));
         });
 
         builder.Services.RegisterDiscoveredHandlers();
@@ -24,6 +24,13 @@ public class Program
         builder.Services.AddSwaggerGen();
 
         var app = builder.Build();
+
+        // Automatyczne tworzenie / aktualizacja bazy danych przy starcie
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SportsCenterDbContext>();
+            db.Database.Migrate(); // Automatycznie tworzy bazę i aplikuje migracje
+        }
 
         if (app.Environment.IsDevelopment())
         {
