@@ -57,7 +57,8 @@ public class SportsCenterDbContext : DbContext
         });
 
         // Konfiguracja Customer
-        modelBuilder.Entity<Customer>(entity =>
+      
+      modelBuilder.Entity<Customer>(entity =>
         {
             entity.HasKey(c => c.Id);
 

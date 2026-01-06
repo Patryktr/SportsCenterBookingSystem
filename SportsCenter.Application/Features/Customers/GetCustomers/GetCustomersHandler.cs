@@ -1,14 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SportsCenter.Application.Abstractions;
-using SportsCenter.Application.Features.Customers.GetCustomers;
 using SportsCenter.Infrastructure.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SportsCenter.Application.Features.Customers.GetCustomers;
+
 public class GetCustomersHandler : IHandlerDefinition
 {
     private readonly SportsCenterDbContext _db;
@@ -18,7 +13,7 @@ public class GetCustomersHandler : IHandlerDefinition
         _db = db;
     }
 
-    public async Task<IEnumerable<GetCustomersResponse>> Handle()
+    public async Task<IEnumerable<GetCustomersResponse>> Handle(CancellationToken ct = default)
     {
         return await _db.Customers
             .Select(c => new GetCustomersResponse
@@ -29,6 +24,6 @@ public class GetCustomersHandler : IHandlerDefinition
                 Email = c.Email,
                 Phone = c.Phone
             })
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 }

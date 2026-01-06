@@ -13,7 +13,7 @@ public class GetFacilitiesHandler : IHandlerDefinition
         _db = db;
     }
 
-    public async Task<IEnumerable<GetFacilitiesResponse>> Handle()
+    public async Task<IEnumerable<GetFacilitiesResponse>> Handle(CancellationToken ct = default)
     {
         return await _db.Facilities
             .AsNoTracking()
@@ -24,6 +24,6 @@ public class GetFacilitiesHandler : IHandlerDefinition
                 f.MaxPlayers,
                 f.PricePerHour,
                 f.IsActive))
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 }

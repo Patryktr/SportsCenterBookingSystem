@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SportsCenter.Application.Abstractions;
 using SportsCenter.Infrastructure.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SportsCenter.Application.Features.Customers.GetCustomerById;
 
@@ -18,7 +13,7 @@ public class GetCustomerByIdHandler : IHandlerDefinition
         _db = db;
     }
 
-    public async Task<GetCustomerByIdResponse?> Handle(Guid publicId)
+    public async Task<GetCustomerByIdResponse?> Handle(Guid publicId, CancellationToken ct = default)
     {
         return await _db.Customers
             .Where(c => c.PublicId == publicId)
@@ -30,6 +25,6 @@ public class GetCustomerByIdHandler : IHandlerDefinition
                 Email = c.Email,
                 Phone = c.Phone
             })
-            .SingleOrDefaultAsync();
+            .SingleOrDefaultAsync(ct);
     }
 }

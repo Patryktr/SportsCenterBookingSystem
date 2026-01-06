@@ -14,10 +14,10 @@ public class CreateFacilityHandler : IHandlerDefinition
         _db = db;
     }
 
-    public async Task<CreateFacilityResponse> Handle(CreateFacilityRequest request)
+    public async Task<CreateFacilityResponse> Handle(CreateFacilityRequest request, CancellationToken ct = default)
     {
         // Walidacja unikalnej nazwy (na wszelki wypadek — db już ma UniqueIndex)
-        if (await _db.Facilities.AnyAsync(f => f.Name == request.Name))
+        if (await _db.Facilities.AnyAsync(f => f.Name == request.Name,ct))
             throw new InvalidOperationException($"Facility '{request.Name}' already exists.");
 
         var facility = new Facility
@@ -30,7 +30,7 @@ public class CreateFacilityHandler : IHandlerDefinition
         };
 
         _db.Facilities.Add(facility);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         return new CreateFacilityResponse(
             facility.Id,
