@@ -11,6 +11,7 @@ public class GetFacilitiesEndpoint : IEndpointDefinition
                 async (GetFacilitiesHandler h, CancellationToken ct)
                     => Results.Ok(await h.Handle(ct)))
             .WithName("GetFacilities")
-            .WithTags("Facilities");
+            .WithTags("Facilities")
+            .RequireRateLimiting("per-customer"); ;
     }
 }

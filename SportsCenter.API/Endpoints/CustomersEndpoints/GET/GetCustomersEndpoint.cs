@@ -11,6 +11,7 @@ public class GetCustomersEndpoint : IEndpointDefinition
                 async (GetCustomersHandler handler, CancellationToken ct)
                     => Results.Ok(await handler.Handle(ct)))
             .WithName("GetCustomers")
-            .WithTags("Customers");
+            .WithTags("Customers")
+            .RequireRateLimiting("per-customer");
     }
 }

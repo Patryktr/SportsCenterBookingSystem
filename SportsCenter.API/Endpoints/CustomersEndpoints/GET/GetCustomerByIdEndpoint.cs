@@ -13,6 +13,7 @@ public class GetCustomerByIdEndpoint : IEndpointDefinition
                         ? Results.Ok(c)
                         : Results.NotFound())
             .WithName("GetCustomerByPublicId")
-            .WithTags("Customers");
+            .WithTags("Customers")
+            .RequireRateLimiting("per-customer");
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SportsCenter.API.Extensions.RateLimiterConfig;
 using SportsCenter.API.Extentions;
 using SportsCenter.Infrastructure.Persistence;
 using SportsCenter.Application.Features.Customers.CreateCustomer;
@@ -16,6 +17,8 @@ public class Program
         {
             options.UseSqlServer(builder.Configuration.GetConnectionString("SportsCenterDb"));
         });
+        //Rate Limiter
+        builder.Services.AddCustomRateLimiter();
 
         builder.Services.RegisterDiscoveredHandlers();
 
@@ -37,6 +40,8 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        app.UseRateLimiter();
 
         app.UseHttpsRedirection();
 
