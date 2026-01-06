@@ -5,13 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SportsCenter.Domain.Entities
-{
+namespace SportsCenter.Domain.Entities;
+
     public class Booking
     {
         public int Id { get; set; }
 
-        public int FacilityId { get; set; }
+
+    public int FacilityId { get; set; }
 
         public int CustomerId { get; set; }
 
@@ -26,10 +27,9 @@ namespace SportsCenter.Domain.Entities
         public BookingStatus Status { get; set; } = BookingStatus.Active;
         public BookingType Type { get; set; } = BookingType.Exclusive;
 
-        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
+       // public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
         public Facility Facility { get; set; } = default!;
 
         public Customer Customer { get; set; } = default!;
     }
-}

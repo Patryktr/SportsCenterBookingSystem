@@ -28,11 +28,11 @@ namespace SportsCenter.Infrastructure.Persistence;
                 .IsUnique();
 
             // RowVersion do współbieżności (jeśli masz takie pole w Booking)
-            modelBuilder.Entity<Booking>()
-                .Property(b => b.RowVersion)
-                .IsRowVersion();
+            //modelBuilder.Entity<Booking>()
+            //    .Property(b => b.RowVersion)
+            //    .IsConcurrencyToken();
 
-            base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(modelBuilder);
         }
     }
 
