@@ -1,5 +1,4 @@
 ﻿using SportsCenter.API.Extentions;
-using SportsCenter.Application.Features.Bookings.CREATE;
 using SportsCenter.Application.Features.Bookings.CreateBooking;
 
 namespace SportsCenter.API.Endpoints.BookingsEndpoints.CREATE;
