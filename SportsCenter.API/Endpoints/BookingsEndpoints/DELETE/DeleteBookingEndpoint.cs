@@ -1,3 +1,4 @@
+using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
 using SportsCenter.Application.Features.Bookings.DeleteBooking;
 
@@ -13,6 +14,12 @@ public class DeleteBookingEndpoint : IEndpointDefinition
                         ? Results.Ok()
                         : Results.NotFound())
             .WithName("DeleteBooking")
-            .WithTags("Bookings");
+            .WithTags("Bookings")
+            .WithSummary("Usuwa rezerwacjê.")
+            .WithDescription(
+                "Usuwa istniej¹c¹ rezerwacjê na podstawie jej identyfikatora. " +
+                "Je¿eli rezerwacja o podanym identyfikatorze nie istnieje, zwracany jest status 404.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesStandardErrors(); 
     }
 }

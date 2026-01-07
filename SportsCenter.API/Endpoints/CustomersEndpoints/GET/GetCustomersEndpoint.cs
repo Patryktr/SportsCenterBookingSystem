@@ -1,4 +1,5 @@
-﻿using SportsCenter.API.Extentions;
+﻿using SportsCenter.API.Endpoints.Common;
+using SportsCenter.API.Extentions;
 using SportsCenter.Application.Features.Customers.GetCustomers;
 
 namespace SportsCenter.API.Endpoints.CustomersEndpoints.GET;
@@ -12,6 +13,12 @@ public class GetCustomersEndpoint : IEndpointDefinition
                     => Results.Ok(await handler.Handle(ct)))
             .WithName("GetCustomers")
             .WithTags("Customers")
+            .WithSummary("Zwraca listę klientów.")
+            .WithDescription(
+                "Zwraca listę wszystkich klientów zapisanych w systemie. " +
+                "Każda pozycja zawiera podstawowe dane identyfikacyjne oraz kontaktowe klienta.")
+            .Produces<IEnumerable<GetCustomersResponse>>(StatusCodes.Status200OK, "application/json")
+            .ProducesStandardErrors()
             .RequireRateLimiting("per-customer");
     }
 }

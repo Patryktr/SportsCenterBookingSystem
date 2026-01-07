@@ -1,4 +1,5 @@
-﻿using SportsCenter.API.Extentions;
+﻿using SportsCenter.API.Endpoints.Common;
+using SportsCenter.API.Extentions;                    
 using SportsCenter.Application.Features.Facilities.UpdateFacility;
 
 namespace SportsCenter.API.Endpoints.FacilitiesEndpoints.UPDATE;
@@ -13,6 +14,13 @@ public class UpdateFacilityEndpoint : IEndpointDefinition
                         ? Results.BadRequest()
                         : await h.Handle(req, ct) ? Results.Ok() : Results.NotFound())
             .WithName("UpdateFacility")
-            .WithTags("Facilities");
+            .WithTags("Facilities")
+            .WithSummary("Aktualizuje obiekt sportowy.")
+            .WithDescription(
+                "Aktualizuje dane istniejącego obiektu sportowego na podstawie identyfikatora w URL. " +
+                "Identyfikator w URL musi być zgodny z identyfikatorem w body. " +
+                "Jeżeli obiekt o podanym identyfikatorze nie istnieje, zwracany jest status 404.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesStandardErrors();
     }
 }

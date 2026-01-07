@@ -1,3 +1,4 @@
+using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
 using SportsCenter.Application.Features.Bookings.GetBookingById;
 
@@ -13,6 +14,13 @@ public class GetBookingByIdEndpoint : IEndpointDefinition
                         ? Results.Ok(booking)
                         : Results.NotFound())
             .WithName("GetBookingById")
-            .WithTags("Bookings");
+            .WithTags("Bookings")
+            .WithSummary("Zwraca szczegó³y rezerwacji.")
+            .WithDescription(
+                "Zwraca szczegó³owe informacje o rezerwacji na podstawie jej identyfikatora. " +
+                "Je¿eli rezerwacja o podanym identyfikatorze nie istnieje, zwracany jest status 404.")
+            .Produces<GetBookingByIdResponse>(StatusCodes.Status200OK, "application/json")
+            .ProducesStandardErrors()
+            .RequireRateLimiting("per-customer");
     }
 }

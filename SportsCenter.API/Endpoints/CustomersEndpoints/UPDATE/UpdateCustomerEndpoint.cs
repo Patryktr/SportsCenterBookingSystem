@@ -1,4 +1,5 @@
-﻿using SportsCenter.API.Extentions;
+﻿using SportsCenter.API.Endpoints.Common;
+using SportsCenter.API.Extentions;
 using SportsCenter.Application.Features.Customers.UpdateCustomer;
 
 namespace SportsCenter.API.Endpoints.CustomersEndpoints.UPDATE;
@@ -13,6 +14,12 @@ public class UpdateCustomerEndpoint : IEndpointDefinition
                         ? Results.Ok()
                         : Results.NotFound())
             .WithName("UpdateCustomer")
-            .WithTags("Customers");
+            .WithTags("Customers")
+            .WithSummary("Aktualizuje dane klienta.")
+            .WithDescription(
+                "Aktualizuje dane istniejącego klienta na podstawie jego publicznego identyfikatora (GUID). " +
+                "Jeżeli klient o podanym identyfikatorze nie istnieje, zwracany jest status 404.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesStandardErrors();
     }
 }
