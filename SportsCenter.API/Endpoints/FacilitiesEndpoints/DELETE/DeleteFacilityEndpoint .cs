@@ -1,4 +1,5 @@
-﻿using SportsCenter.API.Extentions;
+﻿using SportsCenter.API.Endpoints.Common;
+using SportsCenter.API.Extentions;
 using SportsCenter.Application.Features.Facilities.DeleteFacility;
 
 namespace SportsCenter.API.Endpoints.FacilitiesEndpoints.DELETE;
@@ -13,6 +14,12 @@ public class DeleteFacilityEndpoint : IEndpointDefinition
                         ? Results.Ok()
                         : Results.NotFound())
             .WithName("DeleteFacility")
-            .WithTags("Facilities");
+            .WithTags("Facilities")
+            .WithSummary("Usuwa obiekt sportowy.")
+            .WithDescription(
+                "Usuwa obiekt sportowy na podstawie jego identyfikatora. " +
+                "Jeżeli obiekt o podanym identyfikatorze nie istnieje, zwracany jest status 404.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesStandardErrors();
     }
 }

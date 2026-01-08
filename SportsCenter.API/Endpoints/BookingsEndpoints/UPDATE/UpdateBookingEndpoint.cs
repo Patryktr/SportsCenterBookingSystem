@@ -1,3 +1,4 @@
+using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
 using SportsCenter.Application.Features.Bookings.UpdateBooking;
 
@@ -17,6 +18,13 @@ public class UpdateBookingEndpoint : IEndpointDefinition
                         : Results.BadRequest(new { error = result.Error });
                 })
             .WithName("UpdateBooking")
-            .WithTags("Bookings");
+            .WithTags("Bookings")
+            .WithSummary("Aktualizuje rezerwacjê.")
+            .WithDescription(
+                "Aktualizuje dane istniej¹cej rezerwacji na podstawie identyfikatora w URL. " +
+                "Weryfikuje poprawnoœæ danych wejœciowych oraz regu³y biznesowe (np. terminy i dostêpnoœæ). " +
+                "Je¿eli aktualizacja siê powiedzie, zwracany jest status 200.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesStandardErrors();
     }
 }

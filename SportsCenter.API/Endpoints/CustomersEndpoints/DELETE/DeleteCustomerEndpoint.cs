@@ -1,4 +1,5 @@
-﻿using SportsCenter.API.Extentions;
+﻿using SportsCenter.API.Endpoints.Common;
+using SportsCenter.API.Extentions;
 using SportsCenter.Application.Features.Customers.DeleteCustomer;
 
 namespace SportsCenter.API.Endpoints.CustomersEndpoints.DELETE;
@@ -13,6 +14,12 @@ public class DeleteCustomerEndpoint : IEndpointDefinition
                         ? Results.Ok()
                         : Results.NotFound())
             .WithName("DeleteCustomer")
-            .WithTags("Customers");
+            .WithTags("Customers")
+            .WithSummary("Usuwa klienta.")
+            .WithDescription(
+                "Usuwa klienta na podstawie jego publicznego identyfikatora (GUID). " +
+                "Jeżeli klient o podanym identyfikatorze nie istnieje, zwracany jest status 404.")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesStandardErrors();
     }
 }
