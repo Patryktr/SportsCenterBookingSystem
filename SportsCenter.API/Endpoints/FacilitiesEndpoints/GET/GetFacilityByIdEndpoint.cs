@@ -1,5 +1,6 @@
 ﻿using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Facilities.GetFacilityById;
 
 namespace SportsCenter.API.Endpoints.FacilitiesEndpoints.GET;
@@ -13,6 +14,7 @@ public class GetFacilityByIdEndpoint : IEndpointDefinition
                     => await h.Handle(id, ct) is { } f
                         ? Results.Ok(f)
                         : Results.NotFound())
+            .RequireAuthorization(p => p.RequireRole(Roles.User, Roles.Admin))
             .WithName("GetFacilityById")
             .WithTags("Facilities")
             .WithSummary("Zwraca szczegóły obiektu sportowego.")

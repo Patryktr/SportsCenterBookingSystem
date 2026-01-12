@@ -1,5 +1,6 @@
 ﻿using SportsCenter.API.Endpoints.Common;
-using SportsCenter.API.Extentions;                    
+using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Facilities.UpdateFacility;
 
 namespace SportsCenter.API.Endpoints.FacilitiesEndpoints.UPDATE;
@@ -13,6 +14,7 @@ public class UpdateFacilityEndpoint : IEndpointDefinition
                     => id != req.Id
                         ? Results.BadRequest()
                         : await h.Handle(req, ct) ? Results.Ok() : Results.NotFound())
+            .RequireAuthorization(p => p.RequireRole(Roles.Admin))
             .WithName("UpdateFacility")
             .WithTags("Facilities")
             .WithSummary("Aktualizuje obiekt sportowy.")

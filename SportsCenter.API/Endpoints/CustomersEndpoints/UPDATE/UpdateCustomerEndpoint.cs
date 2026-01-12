@@ -1,5 +1,6 @@
 ﻿using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Customers.UpdateCustomer;
 
 namespace SportsCenter.API.Endpoints.CustomersEndpoints.UPDATE;
@@ -13,6 +14,7 @@ public class UpdateCustomerEndpoint : IEndpointDefinition
                     => await handler.Handle(publicId, req, ct)
                         ? Results.Ok()
                         : Results.NotFound())
+            .RequireAuthorization(p => p.RequireRole(Roles.Admin))
             .WithName("UpdateCustomer")
             .WithTags("Customers")
             .WithSummary("Aktualizuje dane klienta.")

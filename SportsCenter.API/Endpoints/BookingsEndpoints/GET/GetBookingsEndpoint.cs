@@ -1,5 +1,6 @@
 using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Bookings.GetBookings;
 
 namespace SportsCenter.API.Endpoints.BookingsEndpoints.GET;
@@ -11,6 +12,7 @@ public class GetBookingsEndpoint : IEndpointDefinition
         app.MapGet(BookingsRoutes.Base,
                 async (GetBookingsHandler handler, CancellationToken ct)
                     => Results.Ok(await handler.Handle(ct)))
+            .RequireAuthorization(p => p.RequireRole(Roles.User, Roles.Admin))
             .WithName("GetBookings")
             .WithTags("Bookings")
             .WithSummary("Zwraca listê rezerwacji.")

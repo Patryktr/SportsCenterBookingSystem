@@ -1,5 +1,6 @@
 ﻿using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Facilities.GetFacilities;
 
 namespace SportsCenter.API.Endpoints.FacilitiesEndpoints.GET;
@@ -11,6 +12,7 @@ public class GetFacilitiesEndpoint : IEndpointDefinition
         app.MapGet($"{FacilitiesRoutes.Base}",
                 async (GetFacilitiesHandler h, CancellationToken ct)
                     => Results.Ok(await h.Handle(ct)))
+            .RequireAuthorization(p => p.RequireRole(Roles.User, Roles.Admin))
             .WithName("GetFacilities")
             .WithTags("Facilities")
             .WithSummary("Zwraca listę obiektów sportowych.")

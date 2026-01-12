@@ -1,5 +1,6 @@
 ﻿using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Bookings.CreateBooking;
 
 namespace SportsCenter.API.Endpoints.BookingsEndpoints.CREATE;
@@ -11,6 +12,7 @@ public class CreateBookingEndpoint : IEndpointDefinition
         app.MapPost($"{BookingsRoutes.Base}",
                 async (CreateBookingRequest req, CreateBookingHandler h, CancellationToken ct)
                     => Results.Ok(await h.Handle(req, ct)))
+            .RequireAuthorization(p => p.RequireRole(Roles.User, Roles.Admin))
             .WithName("CreateBooking")
             .WithTags("Bookings")
             .WithSummary("Tworzy nową rezerwację obiektu sportowego.")

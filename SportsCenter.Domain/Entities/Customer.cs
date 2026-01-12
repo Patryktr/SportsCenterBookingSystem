@@ -11,7 +11,7 @@ public class Customer
     public int Id { get; set; }
 
     public Guid PublicId { get; set; } = Guid.NewGuid();
-   // public string UserId { get; set; } = default!; // FK do AspNetUsers
+   
 
     public string FirstName { get; set; } = default!;
 
