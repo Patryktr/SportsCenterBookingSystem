@@ -1,5 +1,6 @@
 ﻿using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Facilities.CreateFacility;
 
 namespace SportsCenter.API.Endpoints.FacilitiesEndpoints.CREATE;
@@ -10,6 +11,7 @@ public class CreateFacilityEndpoint : IEndpointDefinition
         app.MapPost($"{FacilitiesRoutes.Base}",
                 async (CreateFacilityRequest req, CreateFacilityHandler h, CancellationToken ct)
                     => Results.Ok(await h.Handle(req,ct)))
+            .RequireAuthorization(p => p.RequireRole(Roles.Admin))
             .WithName("CreateFacility")
             .WithTags("Facilities")
             .WithSummary("Tworzy nowy obiekt sportowy.")

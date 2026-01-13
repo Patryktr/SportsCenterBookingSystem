@@ -1,5 +1,6 @@
 using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Bookings.UpdateBooking;
 
 namespace SportsCenter.API.Endpoints.BookingsEndpoints.UPDATE;
@@ -17,6 +18,7 @@ public class UpdateBookingEndpoint : IEndpointDefinition
                         ? Results.Ok()
                         : Results.BadRequest(new { error = result.Error });
                 })
+            .RequireAuthorization(p => p.RequireRole(Roles.Admin))
             .WithName("UpdateBooking")
             .WithTags("Bookings")
             .WithSummary("Aktualizuje rezerwacjê.")

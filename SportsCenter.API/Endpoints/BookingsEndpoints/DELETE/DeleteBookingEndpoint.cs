@@ -1,5 +1,6 @@
 using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Bookings.DeleteBooking;
 
 namespace SportsCenter.API.Endpoints.BookingsEndpoints.DELETE;
@@ -13,6 +14,7 @@ public class DeleteBookingEndpoint : IEndpointDefinition
                     => await handler.Handle(id, ct)
                         ? Results.Ok()
                         : Results.NotFound())
+            .RequireAuthorization(p => p.RequireRole(Roles.User, Roles.Admin))
             .WithName("DeleteBooking")
             .WithTags("Bookings")
             .WithSummary("Usuwa rezerwacjê.")

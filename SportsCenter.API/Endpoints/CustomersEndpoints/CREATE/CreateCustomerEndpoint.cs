@@ -1,5 +1,6 @@
 ﻿using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Customers.CreateCustomer;
 
 namespace SportsCenter.API.Endpoints.CustomersEndpoints.CREATE;
@@ -11,6 +12,7 @@ public class CreateCustomerEndpoint : IEndpointDefinition
         app.MapPost(CustomersRoutes.Base,
                 async (CreateCustomerRequest req, CreateCustomerHandler handler, CancellationToken ct)
                     => Results.Ok(await handler.Handle(req, ct)))
+            .RequireAuthorization(p => p.RequireRole(Roles.User, Roles.Admin))
             .WithName("CreateCustomer")
             .WithTags("Customers")
             .WithSummary("Tworzy nowego klienta.")

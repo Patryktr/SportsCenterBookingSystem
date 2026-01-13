@@ -1,5 +1,6 @@
 ﻿using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Facilities.DeleteFacility;
 
 namespace SportsCenter.API.Endpoints.FacilitiesEndpoints.DELETE;
@@ -13,6 +14,7 @@ public class DeleteFacilityEndpoint : IEndpointDefinition
                     => await h.Handle(id, ct)
                         ? Results.Ok()
                         : Results.NotFound())
+            .RequireAuthorization(p => p.RequireRole(Roles.Admin))
             .WithName("DeleteFacility")
             .WithTags("Facilities")
             .WithSummary("Usuwa obiekt sportowy.")

@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using SportsCenter.API.Extensions.Auth;
 using SportsCenter.API.Extensions.RateLimiterConfig;
 using SportsCenter.API.Extentions;
-using SportsCenter.Infrastructure.Persistence;
 using SportsCenter.Application.Features.Customers.CreateCustomer;
+using SportsCenter.Infrastructure.Persistence;
 
 namespace SportsCenter.API;
 
@@ -25,6 +26,9 @@ public class Program
         // Swagger / OpenAPI
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        //Auth
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddApiAuth(builder.Configuration);
 
         var app = builder.Build();
 
@@ -44,6 +48,8 @@ public class Program
         app.UseRateLimiter();
 
         app.UseHttpsRedirection();
+
+        app.UseApiAuth();
 
         app.MapDiscoveredEndpoints();
 

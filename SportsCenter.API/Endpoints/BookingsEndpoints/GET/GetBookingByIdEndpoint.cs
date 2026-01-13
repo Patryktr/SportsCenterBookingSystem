@@ -1,6 +1,8 @@
 using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
 using SportsCenter.Application.Features.Bookings.GetBookingById;
+using System.Data;
 
 namespace SportsCenter.API.Endpoints.BookingsEndpoints.GET;
 
@@ -13,6 +15,7 @@ public class GetBookingByIdEndpoint : IEndpointDefinition
                     => await handler.Handle(id, ct) is { } booking
                         ? Results.Ok(booking)
                         : Results.NotFound())
+            .RequireAuthorization(p => p.RequireRole(Roles.User, Roles.Admin))
             .WithName("GetBookingById")
             .WithTags("Bookings")
             .WithSummary("Zwraca szczegó³y rezerwacji.")
