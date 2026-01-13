@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SportsCenter.Application.Abstractions;
 using SportsCenter.Application.Common;
+using SportsCenter.Application.Services;
 using SportsCenter.Domain.Entities.Enums;
 using SportsCenter.Infrastructure.Persistence;
 
@@ -9,10 +10,12 @@ namespace SportsCenter.Application.Features.Bookings.UpdateBooking;
 public class UpdateBookingHandler : IHandlerDefinition
 {
     private readonly SportsCenterDbContext _db;
+    private readonly IAvailabilityService _availabilityService;
 
-    public UpdateBookingHandler(SportsCenterDbContext db)
+    public UpdateBookingHandler(SportsCenterDbContext db, IAvailabilityService availabilityService)
     {
         _db = db;
+        _availabilityService = availabilityService;
     }
 
     public async Task<Result<bool>> Handle(int id, UpdateBookingRequest request, CancellationToken ct = default)
@@ -42,16 +45,17 @@ public class UpdateBookingHandler : IHandlerDefinition
             return Result<bool>.Failure($"Maksymalna liczba graczy dla tego obiektu to {booking.Facility.MaxPlayers}");
 
         // Sprawdź dostępność (wykluczając tę samą rezerwację)
-        var hasConflict = await _db.Bookings
-            .Where(b => b.FacilityId == booking.FacilityId)
-            .Where(b => b.Id != id) // Wykluczamy tę samą rezerwację
-            .Where(b => b.Status == BookingStatus.Active)
-            .Where(b => 
-                (b.Start < request.End && b.End > request.Start))
-            .AnyAsync();
+        var availabilityCheck = await _availabilityService.CheckAvailabilityAsync(
+            booking.FacilityId,
+            request.Start,
+            request.End,
+            excludeBookingId: id,
+            ct);
 
-        if (hasConflict)
-            return Result<bool>.Failure("Ten obiekt jest już zarezerwowany w wybranym terminie");
+        if (!availabilityCheck.IsAvailable)
+        {
+            return Result<bool>.Failure(availabilityCheck.ConflictMessage ?? "Obiekt jest niedostępny w wybranym terminie");
+        }
 
         // Przelicz cenę
         var duration = request.End - request.Start;
@@ -64,7 +68,7 @@ public class UpdateBookingHandler : IHandlerDefinition
         booking.PlayersCount = request.PlayersCount;
         booking.TotalPrice = totalPrice;
 
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         return Result<bool>.Success(true);
     }
