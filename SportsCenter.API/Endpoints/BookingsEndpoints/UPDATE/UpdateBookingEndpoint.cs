@@ -14,19 +14,41 @@ public class UpdateBookingEndpoint : IEndpointDefinition
                 {
                     var result = await handler.Handle(id, req, ct);
                     
-                    return result.IsSuccess
-                        ? Results.Ok()
-                        : Results.BadRequest(new { error = result.Error });
+                    if (result.IsSuccess)
+                        return Results.Ok();
+                    
+                    var error = result.Error ?? "Nie moÅ¼na zaktualizowaÄ‡ rezerwacji";
+                    
+                    if (error.Contains("nie istnieje"))
+                        return Results.NotFound(new { error });
+                    
+                    if (IsAvailabilityConflict(error))
+                        return Results.Conflict(new { error });
+                    
+                    return Results.BadRequest(new { error });
                 })
             .RequireAuthorization(p => p.RequireRole(Roles.Admin))
             .WithName("UpdateBooking")
             .WithTags("Bookings")
-            .WithSummary("Aktualizuje rezerwacjê.")
+            .WithSummary("Aktualizuje rezerwacjÄ™.")
             .WithDescription(
-                "Aktualizuje dane istniej¹cej rezerwacji na podstawie identyfikatora w URL. " +
-                "Weryfikuje poprawnoœæ danych wejœciowych oraz regu³y biznesowe (np. terminy i dostêpnoœæ). " +
-                "Je¿eli aktualizacja siê powiedzie, zwracany jest status 200.")
+                "Aktualizuje dane istniejÄ…cej rezerwacji na podstawie identyfikatora w URL. " +
+                "Weryfikuje poprawnoÅ›Ä‡ danych wejÅ›ciowych, godziny otwarcia, blokady terminÃ³w oraz dostÄ™pnoÅ›Ä‡. " +
+                "W przypadku konfliktu dostÄ™pnoÅ›ci zwraca status 409 Conflict.")
             .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status409Conflict)
             .ProducesStandardErrors();
+    }
+
+    private static bool IsAvailabilityConflict(string error)
+    {
+        return error.Contains("zarezerwowany") ||
+               error.Contains("niedostÄ™pny") ||
+               error.Contains("zamkniÄ™ty") ||
+               error.Contains("nieaktywny") ||
+               error.Contains("otwarcia") ||
+               error.Contains("zamkniÄ™cia") ||
+               error.Contains("przerwa") ||
+               error.Contains("blokada");
     }
 }

@@ -1,0 +1,26 @@
+using SportsCenter.API.Endpoints.Common;
+using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.Auth;
+using SportsCenter.Application.Features.Availability;
+
+namespace SportsCenter.API.Endpoints.AvailabilityEndpoints;
+
+public class CheckAvailabilityEndpoint : IEndpointDefinition
+{
+    public void RegisterEndpoints(IEndpointRouteBuilder app)
+    {
+        app.MapPost($"{AvailabilityRoutes.Base}/check",
+                async (CheckAvailabilityRequest req, CheckAvailabilityHandler handler, CancellationToken ct)
+                    => Results.Ok(await handler.Handle(req, ct)))
+            .RequireAuthorization(p => p.RequireRole(Roles.User, Roles.Admin))
+            .WithName("CheckAvailability")
+            .WithTags("Availability")
+            .WithSummary("Sprawdza dostępność obiektu w danym terminie.")
+            .WithDescription(
+                "Weryfikuje czy dany obiekt sportowy jest dostępny w podanym przedziale czasowym. " +
+                "Sprawdza istniejące rezerwacje, blokady terminów oraz godziny otwarcia. " +
+                "Zwraca informację o dostępności oraz ewentualny typ i opis konfliktu.")
+            .Produces<CheckAvailabilityResponse>(StatusCodes.Status200OK, "application/json")
+            .ProducesStandardErrors();
+    }
+}

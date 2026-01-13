@@ -1,19 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SportsCenter.Application.Abstractions;
+using SportsCenter.Application.Common;
+using SportsCenter.Application.Services;
 using SportsCenter.Domain.Entities;
 using SportsCenter.Domain.Entities.Enums;
 using SportsCenter.Infrastructure.Persistence;
-using SportsCenter.Application.Common;
 
 namespace SportsCenter.Application.Features.Bookings.CreateBooking;
 
 public class CreateBookingHandler : IHandlerDefinition
 {
     private readonly SportsCenterDbContext _db;
+    private readonly IAvailabilityService _availabilityService;
 
-    public CreateBookingHandler(SportsCenterDbContext db)
+    public CreateBookingHandler(SportsCenterDbContext db, IAvailabilityService availabilityService)
     {
         _db = db;
+        _availabilityService = availabilityService;
     }
 
     public async Task<Result<CreateBookingResponse>> Handle(CreateBookingRequest request, CancellationToken ct)
@@ -25,17 +28,14 @@ public class CreateBookingHandler : IHandlerDefinition
         if (request.Start < DateTime.UtcNow)
             return Result<CreateBookingResponse>.Failure("Nie można zarezerwować w przeszłości");
 
-        // Sprawdź czy facility istnieje i jest aktywne
-        var facility = await _db.Facilities.FindAsync(request.FacilityId);
+        // Sprawdź czy facility istnieje
+        var facility = await _db.Facilities.FindAsync(new object[] { request.FacilityId }, ct);
         if (facility == null)
             return Result<CreateBookingResponse>.Failure("Obiekt sportowy nie istnieje");
 
-        if (!facility.IsActive)
-            return Result<CreateBookingResponse>.Failure("Obiekt sportowy jest nieaktywny");
-
         // Sprawdź czy customer istnieje
         var customer = await _db.Customers
-            .FirstOrDefaultAsync(c => c.PublicId == request.CustomerPublicId);
+            .FirstOrDefaultAsync(c => c.PublicId == request.CustomerPublicId, ct);
         
         if (customer == null)
             return Result<CreateBookingResponse>.Failure("Klient nie istnieje");
@@ -47,16 +47,18 @@ public class CreateBookingHandler : IHandlerDefinition
         if (request.PlayersCount > facility.MaxPlayers)
             return Result<CreateBookingResponse>.Failure($"Maksymalna liczba graczy dla tego obiektu to {facility.MaxPlayers}");
 
-        // Sprawdź dostępność (czy nie ma nakładających się rezerwacji)
-        var hasConflict = await _db.Bookings
-            .Where(b => b.FacilityId == request.FacilityId)
-            .Where(b => b.Status == BookingStatus.Active)
-            .Where(b => 
-                (b.Start < request.End && b.End > request.Start)) // Nakładające się przedziały czasowe
-            .AnyAsync();
+        // Sprawdź dostępność (godziny otwarcia, blokady, istniejące rezerwacje)
+        var availabilityCheck = await _availabilityService.CheckAvailabilityAsync(
+            request.FacilityId,
+            request.Start,
+            request.End,
+            excludeBookingId: null,
+            ct);
 
-        if (hasConflict)
-            return Result<CreateBookingResponse>.Failure("Ten obiekt jest już zarezerwowany w wybranym terminie");
+        if (!availabilityCheck.IsAvailable)
+        {
+            return Result<CreateBookingResponse>.Failure(availabilityCheck.ConflictMessage ?? "Obiekt jest niedostępny w wybranym terminie");
+        }
 
         // Oblicz cenę
         var duration = request.End - request.Start;
@@ -77,15 +79,15 @@ public class CreateBookingHandler : IHandlerDefinition
         };
 
         _db.Bookings.Add(booking);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         // Załaduj relacje dla odpowiedzi
         await _db.Entry(booking)
             .Reference(b => b.Facility)
-            .LoadAsync();
+            .LoadAsync(ct);
         await _db.Entry(booking)
             .Reference(b => b.Customer)
-            .LoadAsync();
+            .LoadAsync(ct);
 
         return Result<CreateBookingResponse>.Success(new CreateBookingResponse
         {

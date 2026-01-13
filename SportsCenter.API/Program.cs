@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SportsCenter.API.Extensions.Auth;
 using SportsCenter.API.Extensions.RateLimiterConfig;
 using SportsCenter.API.Extentions;
-using SportsCenter.Application.Features.Customers.CreateCustomer;
+using SportsCenter.Application.Services;
 using SportsCenter.Infrastructure.Persistence;
 
 namespace SportsCenter.API;
@@ -18,15 +18,21 @@ public class Program
         {
             options.UseSqlServer(builder.Configuration.GetConnectionString("SportsCenterDb"));
         });
-        //Rate Limiter
+        
+        // Rate Limiter
         builder.Services.AddCustomRateLimiter();
 
+        // Rejestracja handlerów
         builder.Services.RegisterDiscoveredHandlers();
+        
+        // Rejestracja serwisów
+        builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
 
         // Swagger / OpenAPI
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        //Auth
+        
+        // Auth
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddApiAuth(builder.Configuration);
 
@@ -36,7 +42,7 @@ public class Program
         using (var scope = app.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<SportsCenterDbContext>();
-            db.Database.Migrate(); // Automatycznie tworzy bazę i aplikuje migracje
+            db.Database.Migrate();
         }
 
         if (app.Environment.IsDevelopment())
