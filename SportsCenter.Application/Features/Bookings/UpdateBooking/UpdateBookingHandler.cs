@@ -44,6 +44,17 @@ public class UpdateBookingHandler : IHandlerDefinition
         if (request.PlayersCount > booking.Facility.MaxPlayers)
             return Result<bool>.Failure($"Maksymalna liczba graczy dla tego obiektu to {booking.Facility.MaxPlayers}");
 
+        // Walidacja długości rezerwacji
+        var durationMinutes = (request.End - request.Start).TotalMinutes;
+        
+        if (durationMinutes < booking.Facility.MinBookingDurationMinutes)
+            return Result<bool>.Failure(
+                $"Minimalna długość rezerwacji dla tego obiektu to {booking.Facility.MinBookingDurationMinutes} minut");
+        
+        if (durationMinutes > booking.Facility.MaxBookingDurationMinutes)
+            return Result<bool>.Failure(
+                $"Maksymalna długość rezerwacji dla tego obiektu to {booking.Facility.MaxBookingDurationMinutes} minut ({booking.Facility.MaxBookingDurationMinutes / 60} godzin)");
+
         // Sprawdź dostępność (wykluczając tę samą rezerwację)
         var availabilityCheck = await _availabilityService.CheckAvailabilityAsync(
             booking.FacilityId,

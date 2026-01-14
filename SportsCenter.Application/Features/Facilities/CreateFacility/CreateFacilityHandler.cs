@@ -16,9 +16,19 @@ public class CreateFacilityHandler : IHandlerDefinition
 
     public async Task<CreateFacilityResponse> Handle(CreateFacilityRequest request, CancellationToken ct = default)
     {
-        // Walidacja unikalnej nazwy (na wszelki wypadek — db już ma UniqueIndex)
-        if (await _db.Facilities.AnyAsync(f => f.Name == request.Name,ct))
-            throw new InvalidOperationException($"Facility '{request.Name}' already exists.");
+        // Walidacja unikalnej nazwy
+        if (await _db.Facilities.AnyAsync(f => f.Name == request.Name, ct))
+            throw new InvalidOperationException($"Obiekt o nazwie '{request.Name}' już istnieje.");
+
+        // Walidacja min/max duration
+        if (request.MinBookingDurationMinutes <= 0)
+            throw new ArgumentException("Minimalna długość rezerwacji musi być większa niż 0");
+        
+        if (request.MaxBookingDurationMinutes <= 0)
+            throw new ArgumentException("Maksymalna długość rezerwacji musi być większa niż 0");
+        
+        if (request.MinBookingDurationMinutes > request.MaxBookingDurationMinutes)
+            throw new ArgumentException("Minimalna długość rezerwacji nie może być większa niż maksymalna");
 
         var facility = new Facility
         {
@@ -26,7 +36,9 @@ public class CreateFacilityHandler : IHandlerDefinition
             SportType = request.SportType,
             MaxPlayers = request.MaxPlayers,
             PricePerHour = request.PricePerHour,
-            IsActive = true
+            IsActive = true,
+            MinBookingDurationMinutes = request.MinBookingDurationMinutes,
+            MaxBookingDurationMinutes = request.MaxBookingDurationMinutes
         };
 
         _db.Facilities.Add(facility);
@@ -38,7 +50,9 @@ public class CreateFacilityHandler : IHandlerDefinition
             facility.SportType,
             facility.MaxPlayers,
             facility.PricePerHour,
-            facility.IsActive
+            facility.IsActive,
+            facility.MinBookingDurationMinutes,
+            facility.MaxBookingDurationMinutes
         );
     }
 }

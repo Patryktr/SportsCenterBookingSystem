@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SportsCenter.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using SportsCenter.Infrastructure.Persistence;
 namespace SportsCenter.Infrastructure.Migrations
 {
     [DbContext(typeof(SportsCenterDbContext))]
-    partial class SportsCenterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260114173755_AddBookingDurationLimitsToFacility2")]
+    partial class AddBookingDurationLimitsToFacility2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
