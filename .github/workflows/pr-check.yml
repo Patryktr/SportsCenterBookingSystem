@@ -1,0 +1,17 @@
+name: CI - PR Docker build check
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t sportscenterbookingsystem-api .
