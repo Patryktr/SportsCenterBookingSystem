@@ -25,6 +25,8 @@ public class GetFacilityByIdHandler : IHandlerDefinition
                 f.SportType,
                 f.MaxPlayers,
                 f.PricePerHour,
-                f.IsActive);
+                f.IsActive,
+                f.MinBookingDurationMinutes,
+                f.MaxBookingDurationMinutes);
     }
 }

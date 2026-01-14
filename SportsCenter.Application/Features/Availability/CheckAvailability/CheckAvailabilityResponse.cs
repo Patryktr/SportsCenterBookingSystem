@@ -1,6 +1,6 @@
 using SportsCenter.Domain.Entities.Enums;
 
-namespace SportsCenter.Application.Features.Availability;
+namespace SportsCenter.Application.Features.Availability.CheckAvailability;
 
 public class CheckAvailabilityResponse
 {

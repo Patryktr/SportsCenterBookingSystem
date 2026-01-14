@@ -1,4 +1,4 @@
-namespace SportsCenter.Application.Features.Availability;
+namespace SportsCenter.Application.Features.Availability.CheckAvailability;
 
 public class CheckAvailabilityRequest
 {

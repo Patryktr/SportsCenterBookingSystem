@@ -8,5 +8,7 @@ public record CreateFacilityResponse(
     SportType SportType,
     int MaxPlayers,
     decimal PricePerHour,
-    bool IsActive
+    bool IsActive,
+    int MinBookingDurationMinutes,
+    int MaxBookingDurationMinutes
 );

@@ -1,9 +1,9 @@
 using SportsCenter.API.Endpoints.Common;
 using SportsCenter.API.Extentions;
 using SportsCenter.API.Extentions.Auth;
-using SportsCenter.Application.Features.Availability;
+using SportsCenter.Application.Features.Availability.CheckAvailability;
 
-namespace SportsCenter.API.Endpoints.AvailabilityEndpoints;
+namespace SportsCenter.API.Endpoints.AvailabilityEndpoints.CHECK;
 
 public class CheckAvailabilityEndpoint : IEndpointDefinition
 {

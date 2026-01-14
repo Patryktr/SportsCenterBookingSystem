@@ -7,5 +7,7 @@ public record UpdateFacilityRequest(
     string Name,
     SportType SportType,
     int MaxPlayers,
-    decimal PricePerHour
+    decimal PricePerHour,
+    int MinBookingDurationMinutes = 30,
+    int MaxBookingDurationMinutes = 480
 );
