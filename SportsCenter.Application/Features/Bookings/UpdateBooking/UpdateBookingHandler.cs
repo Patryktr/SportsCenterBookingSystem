@@ -20,6 +20,15 @@ public class UpdateBookingHandler : IHandlerDefinition
 
     public async Task<Result<bool>> Handle(int id, UpdateBookingRequest request, CancellationToken ct = default)
     {
+        // Walidacja pełnych godzin
+        if (!IsFullHour(request.Start))
+            return Result<bool>.Failure(
+                "Rezerwacja musi rozpoczynać się o pełnej godzinie (np. 10:00, 11:00)");
+        
+        if (!IsFullHour(request.End))
+            return Result<bool>.Failure(
+                "Rezerwacja musi kończyć się o pełnej godzinie (np. 10:00, 11:00)");
+
         var booking = await _db.Bookings
             .Include(b => b.Facility)
             .FirstOrDefaultAsync(b => b.Id == id, ct);
@@ -82,5 +91,11 @@ public class UpdateBookingHandler : IHandlerDefinition
         await _db.SaveChangesAsync(ct);
 
         return Result<bool>.Success(true);
+    }
+    
+    /// Sprawdza czy podany czas to pełna godzina (minuty i sekundy = 0)
+    private static bool IsFullHour(DateTime dateTime)
+    {
+        return dateTime.Minute == 0 && dateTime.Second == 0 && dateTime.Millisecond == 0;
     }
 }

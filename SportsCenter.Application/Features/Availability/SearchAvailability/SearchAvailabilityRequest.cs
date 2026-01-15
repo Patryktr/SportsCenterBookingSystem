@@ -1,11 +1,10 @@
-using SportsCenter.Domain.Entities.Enums;
-
 namespace SportsCenter.Application.Features.Availability.SearchAvailability;
 
 public class SearchAvailabilityRequest
 {
-    public DateTime Start { get; set; }
-    public DateTime End { get; set; }
-    public SportType? SportType { get; set; }
-    public int? MinPlayers { get; set; }
+    // ID obiektu sportowego (wymagane)
+    public int FacilityId { get; set; }
+    
+    // Data dla której szukamy dostępnych slotów
+    public DateTime Date { get; set; }
 }
