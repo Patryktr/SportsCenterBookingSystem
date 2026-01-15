@@ -1,7 +1,5 @@
 using SportsCenter.Application.Abstractions;
-using SportsCenter.Application.Features.Availability.CheckAvailability;
 using SportsCenter.Application.Services;
-using SportsCenter.Domain.Entities.Enums;
 
 namespace SportsCenter.Application.Features.Availability.CheckAvailability;
 

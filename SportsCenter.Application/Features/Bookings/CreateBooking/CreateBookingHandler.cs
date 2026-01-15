@@ -21,6 +21,15 @@ public class CreateBookingHandler : IHandlerDefinition
 
     public async Task<Result<CreateBookingResponse>> Handle(CreateBookingRequest request, CancellationToken ct)
     {
+        // Walidacja pełnych godzin
+        if (!IsFullHour(request.Start))
+            return Result<CreateBookingResponse>.Failure(
+                "Rezerwacja musi rozpoczynać się o pełnej godzinie (np. 10:00, 11:00)");
+        
+        if (!IsFullHour(request.End))
+            return Result<CreateBookingResponse>.Failure(
+                "Rezerwacja musi kończyć się o pełnej godzinie (np. 10:00, 11:00)");
+
         // Walidacja dat
         if (request.Start >= request.End)
             return Result<CreateBookingResponse>.Failure("Data rozpoczęcia musi być wcześniejsza niż data zakończenia");
@@ -32,6 +41,9 @@ public class CreateBookingHandler : IHandlerDefinition
         var facility = await _db.Facilities.FindAsync(new object[] { request.FacilityId }, ct);
         if (facility == null)
             return Result<CreateBookingResponse>.Failure("Obiekt sportowy nie istnieje");
+
+        if (!facility.IsActive)
+            return Result<CreateBookingResponse>.Failure("Obiekt sportowy jest nieaktywny");
 
         // Sprawdź czy customer istnieje
         var customer = await _db.Customers
@@ -114,5 +126,11 @@ public class CreateBookingHandler : IHandlerDefinition
             Status = booking.Status,
             Type = booking.Type
         });
+    }
+    
+    /// Sprawdza czy podany czas to pełna godzina (minuty i sekundy = 0)
+    private static bool IsFullHour(DateTime dateTime)
+    {
+        return dateTime.Minute == 0 && dateTime.Second == 0 && dateTime.Millisecond == 0;
     }
 }
