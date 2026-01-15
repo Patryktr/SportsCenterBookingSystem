@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using SportsCenter.API.Extensions.Auth;
 using SportsCenter.API.Extensions.RateLimiterConfig;
 using SportsCenter.API.Extentions;
-using SportsCenter.Application.Services;
 using SportsCenter.Infrastructure.Persistence;
 
 namespace SportsCenter.API;
@@ -24,9 +23,6 @@ public class Program
 
         // Rejestracja handlerów
         builder.Services.RegisterDiscoveredHandlers();
-        
-        // Rejestracja serwisów
-        builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
 
         // Swagger / OpenAPI
         builder.Services.AddEndpointsApiExplorer();

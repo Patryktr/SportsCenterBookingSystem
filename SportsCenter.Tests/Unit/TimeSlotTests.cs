@@ -17,8 +17,7 @@ public class TimeSlotTests
             StartTime = "10:00",
             EndTime = "11:00",
             Status = TimeSlotStatus.Available,
-            StatusName = "Wolne",
-            BlockedReason = null
+            StatusName = "Wolne"
         };
 
         // Assert
@@ -28,28 +27,27 @@ public class TimeSlotTests
         slot.EndTime.Should().Be("11:00");
         slot.Status.Should().Be(TimeSlotStatus.Available);
         slot.StatusName.Should().Be("Wolne");
-        slot.BlockedReason.Should().BeNull();
     }
 
     [Fact]
-    public void TimeSlotItem_WhenBlocked_ShouldHaveReason()
+    public void TimeSlotItem_Duration_ShouldBeOneHour()
     {
-        // Arrange & Act
+        // Arrange
         var slot = new TimeSlotItem
         {
             Start = new DateTime(2026, 1, 25, 10, 0, 0),
             End = new DateTime(2026, 1, 25, 11, 0, 0),
             StartTime = "10:00",
             EndTime = "11:00",
-            Status = TimeSlotStatus.Blocked,
-            StatusName = "Zablokowane",
-            BlockedReason = "Przerwa techniczna"
+            Status = TimeSlotStatus.Available,
+            StatusName = "Wolne"
         };
 
+        // Act
+        var duration = slot.End - slot.Start;
+
         // Assert
-        slot.Status.Should().Be(TimeSlotStatus.Blocked);
-        slot.BlockedReason.Should().NotBeNullOrEmpty();
-        slot.BlockedReason.Should().Be("Przerwa techniczna");
+        duration.TotalHours.Should().Be(1);
     }
 
     [Theory]
@@ -87,28 +85,6 @@ public class TimeSlotTests
     }
 
     [Fact]
-    public void TimeSlotItem_Duration_ShouldBeOneHour()
-    {
-        // Arrange
-        var slot = new TimeSlotItem
-        {
-            Start = new DateTime(2026, 1, 25, 10, 0, 0),
-            End = new DateTime(2026, 1, 25, 11, 0, 0),
-            StartTime = "10:00",
-            EndTime = "11:00",
-            Status = TimeSlotStatus.Available,
-            StatusName = "Wolne"
-        };
-
-        // Act
-        var duration = slot.End - slot.Start;
-
-        // Assert
-        duration.TotalHours.Should().Be(1);
-        duration.TotalMinutes.Should().Be(60);
-    }
-
-    [Fact]
     public void GenerateHourlySlots_ShouldCreateCorrectSlots()
     {
         // Arrange
@@ -132,7 +108,7 @@ public class TimeSlotTests
         }
 
         // Assert
-        slots.Should().HaveCount(4); // 8-9, 9-10, 10-11, 11-12
+        slots.Should().HaveCount(4);
         slots.First().StartTime.Should().Be("08:00");
         slots.Last().EndTime.Should().Be("12:00");
     }
