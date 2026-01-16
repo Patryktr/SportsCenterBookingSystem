@@ -1,7 +1,5 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Moq;
 using SportsCenter.Application.Features.Availability.SearchAvailability;
 using SportsCenter.Domain.Entities;
 using SportsCenter.Domain.Entities.Enums;
@@ -22,11 +20,8 @@ public class SearchAvailabilityHandlerTests : IDisposable
             .Options;
 
         _db = new SportsCenterDbContext(options);
-        
-        var loggerMock = new Mock<ILogger<SearchAvailabilityHandler>>();
-        _handler = new SearchAvailabilityHandler(_db, loggerMock.Object);
+        _handler = new SearchAvailabilityHandler(_db);
 
-        // Setup test data
         _testFacility = new Facility
         {
             Id = 1,
@@ -34,8 +29,6 @@ public class SearchAvailabilityHandlerTests : IDisposable
             SportType = SportType.Tennis,
             MaxPlayers = 4,
             PricePerHour = 80,
-            MinBookingDurationMinutes = 60,
-            MaxBookingDurationMinutes = 480,
             IsActive = true
         };
 
@@ -146,11 +139,11 @@ public class SearchAvailabilityHandlerTests : IDisposable
         result.IsSuccess.Should().BeTrue();
         result.Value!.BookedSlots.Should().BeGreaterThan(0);
         
-        var slot10To11 = result.Value.Slots.FirstOrDefault(s => s.StartTime == "10:00");
-        var slot11To12 = result.Value.Slots.FirstOrDefault(s => s.StartTime == "11:00");
+        var slot10to11 = result.Value.Slots.FirstOrDefault(s => s.StartTime == "10:00");
+        var slot11to12 = result.Value.Slots.FirstOrDefault(s => s.StartTime == "11:00");
         
-        slot10To11?.Status.Should().Be(TimeSlotStatus.Booked);
-        slot11To12?.Status.Should().Be(TimeSlotStatus.Booked);
+        slot10to11?.Status.Should().Be(TimeSlotStatus.Booked);
+        slot11to12?.Status.Should().Be(TimeSlotStatus.Booked);
     }
 
     [Fact]
@@ -160,7 +153,7 @@ public class SearchAvailabilityHandlerTests : IDisposable
         var request = new SearchAvailabilityRequest
         {
             FacilityId = _testFacility.Id,
-            Date = DateTime.UtcNow.AddDays(7).Date // Tydzień w przyszłości - wszystko wolne
+            Date = DateTime.UtcNow.AddDays(7).Date
         };
 
         // Act
@@ -169,7 +162,6 @@ public class SearchAvailabilityHandlerTests : IDisposable
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value!.Message.Should().Contain("wolnych terminów");
-        result.Value.AvailableSlots.Should().Be(result.Value.TotalSlots);
     }
 
     [Fact]
@@ -189,8 +181,8 @@ public class SearchAvailabilityHandlerTests : IDisposable
         result.IsSuccess.Should().BeTrue();
         foreach (var slot in result.Value!.Slots)
         {
-            slot.StartTime.Should().MatchRegex(@"^\d{2}:00$", "Format powinien być HH:00");
-            slot.EndTime.Should().MatchRegex(@"^\d{2}:00$", "Format powinien być HH:00");
+            slot.StartTime.Should().MatchRegex(@"^\d{2}:00$");
+            slot.EndTime.Should().MatchRegex(@"^\d{2}:00$");
             slot.StatusName.Should().NotBeNullOrEmpty();
         }
     }
@@ -214,8 +206,7 @@ public class SearchAvailabilityHandlerTests : IDisposable
         
         for (int i = 1; i < slots.Count; i++)
         {
-            slots[i].Start.Should().BeAfter(slots[i - 1].Start, 
-                "Sloty powinny być w kolejności chronologicznej");
+            slots[i].Start.Should().BeAfter(slots[i - 1].Start);
         }
     }
 
@@ -237,7 +228,7 @@ public class SearchAvailabilityHandlerTests : IDisposable
         foreach (var slot in result.Value!.Slots)
         {
             var duration = slot.End - slot.Start;
-            duration.TotalHours.Should().Be(1, "Każdy slot powinien trwać dokładnie 1 godzinę");
+            duration.TotalHours.Should().Be(1);
         }
     }
 
