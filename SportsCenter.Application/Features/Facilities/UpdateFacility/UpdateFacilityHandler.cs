@@ -1,16 +1,20 @@
-using SportsCenter.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using SportsCenter.Application.Abstractions;
+using SportsCenter.Application.Cache;
+using SportsCenter.Infrastructure.Persistence;
 
 namespace SportsCenter.Application.Features.Facilities.UpdateFacility;
 
 public class UpdateFacilityHandler : IHandlerDefinition
 {
     private readonly SportsCenterDbContext _db;
+    private readonly ICacheService _cache;
 
-    public UpdateFacilityHandler(SportsCenterDbContext db)
+    public UpdateFacilityHandler(SportsCenterDbContext db, ICacheService cache)
     {
         _db = db;
+        _cache=cache;
+        
     }
 
     public async Task<bool> Handle(UpdateFacilityRequest request, CancellationToken ct = default)
@@ -38,6 +42,7 @@ public class UpdateFacilityHandler : IHandlerDefinition
         facility.MaxBookingDurationMinutes = request.MaxBookingDurationMinutes;
 
         await _db.SaveChangesAsync(ct);
+        await _cache.RemoveAsync(CacheKeys.FacilitiesAll);
         return true;
     }
 }
