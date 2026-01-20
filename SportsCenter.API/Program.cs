@@ -3,7 +3,6 @@ using SportsCenter.API.Extensions.Auth;
 using SportsCenter.API.Extensions.RateLimiterConfig;
 using SportsCenter.API.Extentions;
 using SportsCenter.Application.Cache;
-using SportsCenter.Application.Services;
 using SportsCenter.Infrastructure.Persistence;
 
 namespace SportsCenter.API;
