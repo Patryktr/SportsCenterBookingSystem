@@ -10,26 +10,24 @@ public class SearchAvailabilityEndpoint : IEndpointDefinition
     public void RegisterEndpoints(IEndpointRouteBuilder app)
     {
         app.MapPost($"{AvailabilityRoutes.Base}/search",
-                async (SearchAvailabilityRequest req, SearchAvailabilityHandler handler, HttpContext httpContext, CancellationToken ct) =>
+                async (SearchAvailabilityRequest req, SearchAvailabilityHandler handler, CancellationToken ct) =>
                 {
                     var result = await handler.Handle(req, ct);
                     
-                    if (result.IsSuccess)
-                        return Results.Ok(result.Value);
-
-                    var error = result.Error ?? "Nie można wyszukać dostępności";
-                    
-                    return Results.BadRequest(new { error });
+                    return result.IsSuccess
+                        ? Results.Ok(result.Value)
+                        : Results.BadRequest(new { error = result.Error });
                 })
             .RequireAuthorization(p => p.RequireRole(Roles.User, Roles.Admin))
             .WithName("SearchAvailability")
             .WithTags("Availability")
-            .WithSummary("Wyszukuje dostępne obiekty w podanym terminie.")
+            .WithSummary("Wyszukuje dostępne sloty godzinowe dla obiektu.")
             .WithDescription(
-                "Zwraca listę wszystkich obiektów sportowych dostępnych w podanym przedziale czasowym. " +
-                "Można filtrować wyniki po typie sportu i minimalnej liczbie graczy. " +
-                "Wyniki zawierają obliczoną cenę całkowitą rezerwacji dla każdego obiektu.")
+                "Zwraca listę slotów godzinowych dla wybranego obiektu sportowego w danym dniu. " +
+                "Każdy slot ma status: Wolne, Zarezerwowane, Zablokowane, Zamknięte lub Minione. " +
+                "Rezerwacje można tworzyć tylko na pełne godziny (np. 10:00-11:00, 14:00-16:00).")
             .Produces<SearchAvailabilityResponse>(StatusCodes.Status200OK, "application/json")
+            .Produces(StatusCodes.Status400BadRequest)
             .ProducesStandardErrors();
     }
 }

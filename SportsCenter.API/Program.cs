@@ -21,13 +21,21 @@ public class Program
         });
         
         // Rate Limiter
-        builder.Services.AddCustomRateLimiter();
-
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddCustomRateLimiter(
+                permitLimit: 10000,
+                window: TimeSpan.FromMinutes(1),
+                enableGlobalLimiter: false  // ← WYŁĄCZ GLOBALNY
+            );
+        }
+        else
+        {
+            builder.Services.AddCustomRateLimiter();
+        }
+        
         // Rejestracja handlerów
         builder.Services.RegisterDiscoveredHandlers();
-        
-        // Rejestracja serwisów
-        builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
 
         // Swagger / OpenAPI
         builder.Services.AddEndpointsApiExplorer();

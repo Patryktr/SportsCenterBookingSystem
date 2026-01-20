@@ -1,9 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Moq;
 using SportsCenter.Application.Features.Bookings.CreateBooking;
-using SportsCenter.Application.Services;
 using SportsCenter.Domain.Entities;
 using SportsCenter.Domain.Entities.Enums;
 using SportsCenter.Infrastructure.Persistence;
@@ -24,11 +21,8 @@ public class CreateBookingHandlerTests : IDisposable
             .Options;
 
         _db = new SportsCenterDbContext(options);
-        
-        var availabilityService = new AvailabilityService(_db);
-        _handler = new CreateBookingHandler(_db, availabilityService);
+        _handler = new CreateBookingHandler(_db);
 
-        // Setup test data
         _testCustomer = new Customer
         {
             Id = 1,
@@ -45,8 +39,6 @@ public class CreateBookingHandlerTests : IDisposable
             SportType = SportType.Tennis,
             MaxPlayers = 4,
             PricePerHour = 50,
-            MinBookingDurationMinutes = 30,
-            MaxBookingDurationMinutes = 480,
             IsActive = true
         };
 
@@ -75,13 +67,13 @@ public class CreateBookingHandlerTests : IDisposable
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        result.Value!.TotalPrice.Should().Be(100); // 2h * 50 zł
+        result.Value!.TotalPrice.Should().Be(100);
     }
 
     [Fact]
     public async Task Handle_WithConflictingBooking_ShouldReturnFailure()
     {
-        // Arrange - create existing booking
+        // Arrange
         var existingBooking = new Booking
         {
             FacilityId = _testFacility.Id,
@@ -99,7 +91,7 @@ public class CreateBookingHandlerTests : IDisposable
         {
             FacilityId = _testFacility.Id,
             CustomerPublicId = _testCustomer.PublicId,
-            Start = DateTime.UtcNow.AddDays(1).Date.AddHours(11), // Overlaps with existing
+            Start = DateTime.UtcNow.AddDays(1).Date.AddHours(11),
             End = DateTime.UtcNow.AddDays(1).Date.AddHours(13),
             PlayersCount = 2,
             Type = BookingType.Exclusive
@@ -114,7 +106,29 @@ public class CreateBookingHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task Handle_WithDurationBelowMinimum_ShouldReturnFailure()
+    public async Task Handle_WithStartNotFullHour_ShouldReturnFailure()
+    {
+        // Arrange
+        var request = new CreateBookingRequest
+        {
+            FacilityId = _testFacility.Id,
+            CustomerPublicId = _testCustomer.PublicId,
+            Start = DateTime.UtcNow.AddDays(1).Date.AddHours(10).AddMinutes(30),
+            End = DateTime.UtcNow.AddDays(1).Date.AddHours(12),
+            PlayersCount = 2,
+            Type = BookingType.Exclusive
+        };
+
+        // Act
+        var result = await _handler.Handle(request, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("pełnej godzinie");
+    }
+
+    [Fact]
+    public async Task Handle_WithEndNotFullHour_ShouldReturnFailure()
     {
         // Arrange
         var request = new CreateBookingRequest
@@ -122,7 +136,7 @@ public class CreateBookingHandlerTests : IDisposable
             FacilityId = _testFacility.Id,
             CustomerPublicId = _testCustomer.PublicId,
             Start = DateTime.UtcNow.AddDays(1).Date.AddHours(10),
-            End = DateTime.UtcNow.AddDays(1).Date.AddHours(10).AddMinutes(15), // Only 15 minutes
+            End = DateTime.UtcNow.AddDays(1).Date.AddHours(11).AddMinutes(45),
             PlayersCount = 2,
             Type = BookingType.Exclusive
         };
@@ -132,19 +146,19 @@ public class CreateBookingHandlerTests : IDisposable
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Contain("Minimalna długość");
+        result.Error.Should().Contain("pełnej godzinie");
     }
 
     [Fact]
-    public async Task Handle_WithDurationAboveMaximum_ShouldReturnFailure()
+    public async Task Handle_WithFullHours_ShouldSucceed()
     {
         // Arrange
         var request = new CreateBookingRequest
         {
             FacilityId = _testFacility.Id,
             CustomerPublicId = _testCustomer.PublicId,
-            Start = DateTime.UtcNow.AddDays(1).Date.AddHours(8),
-            End = DateTime.UtcNow.AddDays(1).Date.AddHours(20), // 12 hours > 8 hours max
+            Start = DateTime.UtcNow.AddDays(1).Date.AddHours(14),
+            End = DateTime.UtcNow.AddDays(1).Date.AddHours(16),
             PlayersCount = 2,
             Type = BookingType.Exclusive
         };
@@ -153,8 +167,9 @@ public class CreateBookingHandlerTests : IDisposable
         var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Contain("Maksymalna długość");
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Start.Minute.Should().Be(0);
+        result.Value.End.Minute.Should().Be(0);
     }
 
     [Fact]
@@ -167,7 +182,7 @@ public class CreateBookingHandlerTests : IDisposable
             CustomerPublicId = _testCustomer.PublicId,
             Start = DateTime.UtcNow.AddDays(1).Date.AddHours(10),
             End = DateTime.UtcNow.AddDays(1).Date.AddHours(12),
-            PlayersCount = 10, // Max is 4
+            PlayersCount = 10,
             Type = BookingType.Exclusive
         };
 
@@ -212,8 +227,8 @@ public class CreateBookingHandlerTests : IDisposable
         {
             FacilityId = _testFacility.Id,
             CustomerPublicId = _testCustomer.PublicId,
-            Start = DateTime.UtcNow.AddDays(-1), // Yesterday
-            End = DateTime.UtcNow.AddDays(-1).AddHours(2),
+            Start = DateTime.UtcNow.AddDays(-1).Date.AddHours(10),
+            End = DateTime.UtcNow.AddDays(-1).Date.AddHours(12),
             PlayersCount = 2,
             Type = BookingType.Exclusive
         };
@@ -224,6 +239,94 @@ public class CreateBookingHandlerTests : IDisposable
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Contain("przeszłości");
+    }
+
+    [Fact]
+    public async Task Handle_WithNonExistentCustomer_ShouldReturnFailure()
+    {
+        // Arrange
+        var request = new CreateBookingRequest
+        {
+            FacilityId = _testFacility.Id,
+            CustomerPublicId = Guid.NewGuid(),
+            Start = DateTime.UtcNow.AddDays(1).Date.AddHours(10),
+            End = DateTime.UtcNow.AddDays(1).Date.AddHours(12),
+            PlayersCount = 2,
+            Type = BookingType.Exclusive
+        };
+
+        // Act
+        var result = await _handler.Handle(request, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("Klient nie istnieje");
+    }
+
+    [Fact]
+    public async Task Handle_WithNonExistentFacility_ShouldReturnFailure()
+    {
+        // Arrange
+        var request = new CreateBookingRequest
+        {
+            FacilityId = 999,
+            CustomerPublicId = _testCustomer.PublicId,
+            Start = DateTime.UtcNow.AddDays(1).Date.AddHours(10),
+            End = DateTime.UtcNow.AddDays(1).Date.AddHours(12),
+            PlayersCount = 2,
+            Type = BookingType.Exclusive
+        };
+
+        // Act
+        var result = await _handler.Handle(request, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("nie istnieje");
+    }
+
+    [Fact]
+    public async Task Handle_WithZeroPlayers_ShouldReturnFailure()
+    {
+        // Arrange
+        var request = new CreateBookingRequest
+        {
+            FacilityId = _testFacility.Id,
+            CustomerPublicId = _testCustomer.PublicId,
+            Start = DateTime.UtcNow.AddDays(1).Date.AddHours(10),
+            End = DateTime.UtcNow.AddDays(1).Date.AddHours(12),
+            PlayersCount = 0,
+            Type = BookingType.Exclusive
+        };
+
+        // Act
+        var result = await _handler.Handle(request, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("większa niż 0");
+    }
+
+    [Fact]
+    public async Task Handle_WithStartAfterEnd_ShouldReturnFailure()
+    {
+        // Arrange
+        var request = new CreateBookingRequest
+        {
+            FacilityId = _testFacility.Id,
+            CustomerPublicId = _testCustomer.PublicId,
+            Start = DateTime.UtcNow.AddDays(1).Date.AddHours(14),
+            End = DateTime.UtcNow.AddDays(1).Date.AddHours(12),
+            PlayersCount = 2,
+            Type = BookingType.Exclusive
+        };
+
+        // Act
+        var result = await _handler.Handle(request, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("wcześniejsza niż data zakończenia");
     }
 
     public void Dispose()
