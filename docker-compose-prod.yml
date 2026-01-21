@@ -1,12 +1,4 @@
-# =============================================================================
-# SportsCenter API - Production Docker Compose
-# Używa obrazu z GitHub Container Registry
-# =============================================================================
-
 services:
-  # ---------------------------------------------------------------------------
-  # SQL Server Database
-  # ---------------------------------------------------------------------------
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     platform: linux/amd64
@@ -29,9 +21,6 @@ services:
       - sportscenter-network
     restart: unless-stopped
 
-  # ---------------------------------------------------------------------------
-  # Redis Cache
-  # ---------------------------------------------------------------------------
   redis:
     image: redis:7
     container_name: sportscenter_redis
@@ -43,9 +32,6 @@ services:
       - sportscenter-network
     restart: unless-stopped
 
-  # ---------------------------------------------------------------------------
-  # SportsCenter API (obraz z GHCR)
-  # ---------------------------------------------------------------------------
   api:
     image: ghcr.io/norbert-szyszka15/sportscenterbookingsystem/sportscenter-api:latest
     container_name: sportscenter_api
