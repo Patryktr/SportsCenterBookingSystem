@@ -1,10 +1,9 @@
 <div align="center">
-  <img 
-    src="assets/logo.png"
-    alt="SportsCenterBookingSystem logo"
-    style="max-width: 600px; height: 300px;"
-  />
+  <img src="assets/logo.png" width="350"/>
+  <h1>SportsCenterBookingSystem</h1>
+  <p>System rezerwacji obiektów sportowych</p>
 </div>
+
 
 
 ## Wprowadzenie i cel projektu
