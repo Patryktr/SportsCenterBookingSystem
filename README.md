@@ -36,14 +36,14 @@ Aby wdrożyć i uruchomić aplikację, konieczne jest uprzednie zainstalowanie �
     docker-compose -f docker-compose.prod.yml up -d
     ```
 
-Po uruchomieniu aplikacji w Docker Desktop lub po sprawdzeniu statusu kontenerów przy użyciu komendy
-```
-docker-compose -f docker-compose.prod.yml ps
-```
-powinny pojawić się 3 działające kontenery:
-- `sportscenter_api` – API aplikacji,
-- `sportscenter_sqlserver` – baza danych SQL Server dla aplikacji,
-- `sportscenter_redis` – cache Redis dla obiektów sportowych.
+	Po uruchomieniu aplikacji w Docker Desktop lub po sprawdzeniu statusu kontenerów przy użyciu komendy
+	```
+	docker-compose -f docker-compose.prod.yml ps
+	```
+    powinny pojawić się 3 działające kontenery:
+    - `sportscenter_api` – API aplikacji,
+    - `sportscenter_sqlserver` – baza danych SQL Server dla aplikacji,
+    - `sportscenter_redis` – cache Redis dla obiektów sportowych.
 
 
 3. Otworzyć w przeglądarce nową kartę pod adresem `http://localhost:5001/swagger/`, co zapewni dostęp do dokumentacji Swagger/OpenAPI. W tym momencie można już dowolnie testować REST API.
@@ -61,4 +61,4 @@ Aby spopulować bazę danych aplikacji przykładowymi wartościami, należy kole
 Jeżeli populacja bazy danych się powiedzie, skrypt poinformuje o sukcesie wykonania.
 
 ### Testy zapytań
-Na tym poziomie aplikacja jest gotowa do testowania. Testy zapytań można wykonywać z poziomu SwaggerUI lub przy wykorzystaniu dowolnego narzędzia do testowania enepointów, np. Postman. Kolekcja Postmana przygotowana konkretnie dla tej aplikacji jest dostępna w repozytorium, a jej opis znajdzie się poniżej.
+Na tym poziomie aplikacja jest gotowa do testowania. Testy zapytań można wykonywać z poziomu SwaggerUI lub przy wykorzystaniu dowolnego narzędzia do testowania enepointów, np. Postman. Kolekcja Postmana przygotowana konkretnie dla tej aplikacji jest dostępna w repozytorium, a jej opis znajduje się niżej w readme.
