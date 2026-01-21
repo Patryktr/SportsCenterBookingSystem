@@ -5,48 +5,72 @@ using NBomber.Contracts;
 using NBomber.Contracts.Stats;
 using NBomber.CSharp;
 using NBomber.Http.CSharp;
+using Xunit;
 
 namespace SportsCenter.Tests.Performance;
 
-[Collection("PerformanceTests")]
-public class ApiPerformanceTests : IDisposable
+// Definicja kolekcji dla testów wydajnościowych.
+[CollectionDefinition("PerformanceTests", DisableParallelization = true)]
+public class PerformanceTestsCollection : ICollectionFixture<PerformanceTestFixture>
 {
-    private const string BaseUrl = "http://localhost:5001";
-    private const string AdminAuth = "admin:123";
-    private const string UserAuth = "user:123";
-    private readonly HttpClient _adminClient;
-    private readonly HttpClient _userClient;
-    
-    // Shared test data
-    private static int _testFacilityId = 1;
-    private static Guid _testCustomerId = Guid.Empty;
+}
 
-    public ApiPerformanceTests()
+// Fixture dla testów wydajnościowych - współdzielony kontekst.
+public class PerformanceTestFixture : IDisposable
+{
+    public HttpClient AdminClient { get; }
+    public HttpClient UserClient { get; }
+    public string BaseUrl { get; }
+
+    public PerformanceTestFixture()
     {
-        _adminClient = CreateHttpClient(AdminAuth);
-        _userClient = CreateHttpClient(UserAuth);
+        BaseUrl = Environment.GetEnvironmentVariable("API_BASE_URL") ?? "http://localhost:5001";
+        AdminClient = CreateHttpClient("admin:123");
+        UserClient = CreateHttpClient("user:123");
     }
 
-    private static HttpClient CreateHttpClient(string auth)
+    private HttpClient CreateHttpClient(string auth)
     {
         var client = new HttpClient
         {
             BaseAddress = new Uri(BaseUrl),
             Timeout = TimeSpan.FromSeconds(30)
         };
-        
+
         var authBytes = Encoding.UTF8.GetBytes(auth);
-        client.DefaultRequestHeaders.Authorization = 
+        client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authBytes));
-        
+
         return client;
+    }
+
+    public void Dispose()
+    {
+        AdminClient.Dispose();
+        UserClient.Dispose();
+    }
+}
+
+[Collection("PerformanceTests")]
+public class ApiPerformanceTests : IClassFixture<PerformanceTestFixture>
+{
+    private readonly PerformanceTestFixture _fixture;
+    private readonly HttpClient _adminClient;
+    private readonly HttpClient _userClient;
+
+    public ApiPerformanceTests(PerformanceTestFixture fixture)
+    {
+        _fixture = fixture;
+        _adminClient = fixture.AdminClient;
+        _userClient = fixture.UserClient;
     }
 
     private static string UniqueCustomerId() => $"perf-test-{Guid.NewGuid()}";
 
     #region ==================== GET ENDPOINTS - LOAD TESTS ====================
 
-    [Fact]
+    [Fact(Skip = "Requires running API server on localhost:5001")]
+    [Trait("Category", "Performance")]
     public void GetFacilities_LoadTest()
     {
         var scenario = Scenario.Create("get_facilities", async context =>
@@ -69,12 +93,13 @@ public class ApiPerformanceTests : IDisposable
         AssertPerformance(stats.ScenarioStats[0], maxP95Latency: 500, maxFailRate: 0.01);
     }
 
-    [Fact]
+    [Fact(Skip = "Requires running API server on localhost:5001")]
+    [Trait("Category", "Performance")]
     public void GetFacilityById_LoadTest()
     {
         var scenario = Scenario.Create("get_facility_by_id", async context =>
         {
-            var facilityId = (context.InvocationNumber % 5) + 1; // Rotate through IDs 1-5
+            var facilityId = (context.InvocationNumber % 5) + 1;
             var request = Http.CreateRequest("GET", $"/api/facilities/{facilityId}")
                 .WithHeader("Accept", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId());
@@ -93,7 +118,8 @@ public class ApiPerformanceTests : IDisposable
         AssertPerformance(stats.ScenarioStats[0], maxP95Latency: 300, maxFailRate: 0.05);
     }
 
-    [Fact]
+    [Fact(Skip = "Requires running API server on localhost:5001")]
+    [Trait("Category", "Performance")]
     public void GetBookings_LoadTest()
     {
         var scenario = Scenario.Create("get_bookings", async context =>
@@ -116,7 +142,8 @@ public class ApiPerformanceTests : IDisposable
         AssertPerformance(stats.ScenarioStats[0], maxP95Latency: 500, maxFailRate: 0.01);
     }
 
-    [Fact]
+    [Fact(Skip = "Requires running API server on localhost:5001")]
+    [Trait("Category", "Performance")]
     public void GetBookingById_LoadTest()
     {
         var scenario = Scenario.Create("get_booking_by_id", async context =>
@@ -137,10 +164,11 @@ public class ApiPerformanceTests : IDisposable
             .WithReportFolder("./reports/get-booking-by-id")
             .Run();
 
-        AssertPerformance(stats.ScenarioStats[0], maxP95Latency: 300, maxFailRate: 0.10); // Higher fail rate expected (404s)
+        AssertPerformance(stats.ScenarioStats[0], maxP95Latency: 300, maxFailRate: 0.10);
     }
 
-    [Fact]
+    [Fact(Skip = "Requires running API server on localhost:5001")]
+    [Trait("Category", "Performance")]
     public void GetCustomers_LoadTest()
     {
         var scenario = Scenario.Create("get_customers", async context =>
@@ -167,13 +195,14 @@ public class ApiPerformanceTests : IDisposable
 
     #region ==================== AVAILABILITY ENDPOINTS - LOAD TESTS ====================
 
-    [Fact]
+    [Fact(Skip = "Requires running API server on localhost:5001")]
+    [Trait("Category", "Performance")]
     public void CheckAvailability_LoadTest()
     {
         var scenario = Scenario.Create("check_availability", async context =>
         {
             var tomorrow = DateTime.UtcNow.AddDays(1).Date;
-            var hour = 8 + (context.InvocationNumber % 12); // Hours 8-19
+            var hour = 8 + (context.InvocationNumber % 12);
             var requestBody = new
             {
                 facilityId = (context.InvocationNumber % 3) + 1,
@@ -185,8 +214,8 @@ public class ApiPerformanceTests : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId())
                 .WithBody(new StringContent(
-                    JsonSerializer.Serialize(requestBody), 
-                    Encoding.UTF8, 
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
                     "application/json"));
 
             return await Http.Send(_adminClient, request);
@@ -220,8 +249,8 @@ public class ApiPerformanceTests : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId())
                 .WithBody(new StringContent(
-                    JsonSerializer.Serialize(requestBody), 
-                    Encoding.UTF8, 
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
                     "application/json"));
 
             return await Http.Send(_adminClient, request);
@@ -260,8 +289,8 @@ public class ApiPerformanceTests : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId())
                 .WithBody(new StringContent(
-                    JsonSerializer.Serialize(requestBody), 
-                    Encoding.UTF8, 
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
                     "application/json"));
 
             return await Http.Send(_adminClient, request);
@@ -296,8 +325,8 @@ public class ApiPerformanceTests : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId())
                 .WithBody(new StringContent(
-                    JsonSerializer.Serialize(requestBody), 
-                    Encoding.UTF8, 
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
                     "application/json"));
 
             return await Http.Send(_adminClient, request);
@@ -320,15 +349,14 @@ public class ApiPerformanceTests : IDisposable
     {
         var scenario = Scenario.Create("create_booking", async context =>
         {
-            // Each booking uses unique time slot to avoid conflicts
             var daysAhead = (context.InvocationNumber / 12) + 1;
             var hour = 8 + (context.InvocationNumber % 12);
             var bookingDate = DateTime.UtcNow.AddDays(daysAhead).Date;
-            
+
             var requestBody = new
             {
                 facilityId = 1,
-                customerPublicId = _testCustomerId != Guid.Empty ? _testCustomerId : Guid.NewGuid(),
+                customerPublicId = Guid.NewGuid(),
                 start = bookingDate.AddHours(hour).ToString("o"),
                 end = bookingDate.AddHours(hour + 1).ToString("o"),
                 playersCount = 2,
@@ -339,8 +367,8 @@ public class ApiPerformanceTests : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId())
                 .WithBody(new StringContent(
-                    JsonSerializer.Serialize(requestBody), 
-                    Encoding.UTF8, 
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
                     "application/json"));
 
             return await Http.Send(_adminClient, request);
@@ -355,7 +383,6 @@ public class ApiPerformanceTests : IDisposable
             .WithReportFolder("./reports/create-booking")
             .Run();
 
-        // Higher fail rate expected due to validation errors (non-existent customer, conflicts)
         AssertPerformance(stats.ScenarioStats[0], maxP95Latency: 1500, maxFailRate: 0.50);
     }
 
@@ -382,8 +409,8 @@ public class ApiPerformanceTests : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId())
                 .WithBody(new StringContent(
-                    JsonSerializer.Serialize(requestBody), 
-                    Encoding.UTF8, 
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
                     "application/json"));
 
             return await Http.Send(_adminClient, request);
@@ -409,7 +436,7 @@ public class ApiPerformanceTests : IDisposable
             var bookingId = (context.InvocationNumber % 5) + 1;
             var tomorrow = DateTime.UtcNow.AddDays(1).Date;
             var hour = 10 + (context.InvocationNumber % 8);
-            
+
             var requestBody = new
             {
                 start = tomorrow.AddHours(hour).ToString("o"),
@@ -421,8 +448,8 @@ public class ApiPerformanceTests : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId())
                 .WithBody(new StringContent(
-                    JsonSerializer.Serialize(requestBody), 
-                    Encoding.UTF8, 
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
                     "application/json"));
 
             return await Http.Send(_adminClient, request);
@@ -437,7 +464,6 @@ public class ApiPerformanceTests : IDisposable
             .WithReportFolder("./reports/update-booking")
             .Run();
 
-        // Higher fail rate - bookings may not exist or have conflicts
         AssertPerformance(stats.ScenarioStats[0], maxP95Latency: 1500, maxFailRate: 0.50);
     }
 
@@ -450,9 +476,8 @@ public class ApiPerformanceTests : IDisposable
     {
         var scenario = Scenario.Create("delete_booking", async context =>
         {
-            // Try to delete various booking IDs (many will 404, that's expected)
-            var bookingId = context.InvocationNumber + 1000; // High IDs unlikely to exist
-            
+            var bookingId = context.InvocationNumber + 1000;
+
             var request = Http.CreateRequest("DELETE", $"/api/bookings/{bookingId}")
                 .WithHeader("X-Customer-Id", UniqueCustomerId());
 
@@ -468,7 +493,6 @@ public class ApiPerformanceTests : IDisposable
             .WithReportFolder("./reports/delete-booking")
             .Run();
 
-        // High fail rate expected (404s)
         AssertPerformance(stats.ScenarioStats[0], maxP95Latency: 500, maxFailRate: 0.95);
     }
 
@@ -516,12 +540,12 @@ public class ApiPerformanceTests : IDisposable
         {
             var searchDate = DateTime.UtcNow.AddDays(1).Date;
             var requestBody = new { facilityId = 1, date = searchDate.ToString("yyyy-MM-dd") };
-            
+
             var request = Http.CreateRequest("POST", "/api/availability/search")
                 .WithHeader("Content-Type", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId())
                 .WithBody(new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
-            
+
             return await Http.Send(_adminClient, request);
         })
         .WithoutWarmUp()
@@ -536,7 +560,7 @@ public class ApiPerformanceTests : IDisposable
 
         foreach (var scenarioStats in stats.ScenarioStats)
         {
-            Assert.True(scenarioStats.Ok.Latency.Percent99 < 3000, 
+            Assert.True(scenarioStats.Ok.Latency.Percent99 < 3000,
                 $"Scenario '{scenarioStats.ScenarioName}' P99 latency ({scenarioStats.Ok.Latency.Percent99}ms) exceeds 3000ms");
         }
     }
@@ -584,7 +608,7 @@ public class ApiPerformanceTests : IDisposable
 
         foreach (var scenarioStats in stats.ScenarioStats)
         {
-            Assert.True(scenarioStats.Ok.Latency.Percent99 < 5000, 
+            Assert.True(scenarioStats.Ok.Latency.Percent99 < 5000,
                 $"Scenario '{scenarioStats.ScenarioName}' P99 latency ({scenarioStats.Ok.Latency.Percent99}ms) exceeds 5000ms");
         }
     }
@@ -636,7 +660,7 @@ public class ApiPerformanceTests : IDisposable
             .WithReportFolder("./reports/spike")
             .Run();
 
-        Assert.True(stats.ScenarioStats[0].Ok.Latency.Percent99 < 5000, 
+        Assert.True(stats.ScenarioStats[0].Ok.Latency.Percent99 < 5000,
             $"P99 latency ({stats.ScenarioStats[0].Ok.Latency.Percent99}ms) exceeds 5000ms during spike");
     }
 
@@ -663,7 +687,7 @@ public class ApiPerformanceTests : IDisposable
             .WithReportFolder("./reports/double-spike")
             .Run();
 
-        Assert.True(stats.ScenarioStats[0].Ok.Latency.Percent99 < 8000, 
+        Assert.True(stats.ScenarioStats[0].Ok.Latency.Percent99 < 8000,
             $"P99 latency ({stats.ScenarioStats[0].Ok.Latency.Percent99}ms) exceeds 8000ms during double spike");
     }
 
@@ -691,10 +715,10 @@ public class ApiPerformanceTests : IDisposable
             .Run();
 
         var scenarioStats = stats.ScenarioStats[0];
-        
-        Assert.True(scenarioStats.Ok.Latency.Percent95 < 1000, 
+
+        Assert.True(scenarioStats.Ok.Latency.Percent95 < 1000,
             $"P95 latency ({scenarioStats.Ok.Latency.Percent95}ms) exceeds 1000ms");
-        
+
         var totalRequests = scenarioStats.Ok.Request.Count + scenarioStats.Fail.Request.Count;
         var failRate = totalRequests > 0 ? (double)scenarioStats.Fail.Request.Count / totalRequests : 0;
         Assert.True(failRate < 0.01, $"Fail rate ({failRate:P}) exceeds 1%");
@@ -724,12 +748,12 @@ public class ApiPerformanceTests : IDisposable
         {
             var searchDate = DateTime.UtcNow.AddDays(1 + (context.InvocationNumber % 30)).Date;
             var requestBody = new { facilityId = (context.InvocationNumber % 3) + 1, date = searchDate.ToString("yyyy-MM-dd") };
-            
+
             var request = Http.CreateRequest("POST", "/api/availability/search")
                 .WithHeader("Content-Type", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId())
                 .WithBody(new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
-            
+
             return await Http.Send(_adminClient, request);
         })
         .WithoutWarmUp()
@@ -744,7 +768,7 @@ public class ApiPerformanceTests : IDisposable
 
         foreach (var scenarioStats in stats.ScenarioStats)
         {
-            Assert.True(scenarioStats.Ok.Latency.Percent95 < 2000, 
+            Assert.True(scenarioStats.Ok.Latency.Percent95 < 2000,
                 $"Scenario '{scenarioStats.ScenarioName}' P95 latency ({scenarioStats.Ok.Latency.Percent95}ms) exceeds 2000ms");
         }
     }
@@ -756,38 +780,39 @@ public class ApiPerformanceTests : IDisposable
     [Fact]
     public void RealisticUserWorkflow_Test()
     {
-        // Simulates real user behavior: browse facilities -> check availability -> search slots
         var workflowScenario = Scenario.Create("user_workflow", async context =>
         {
             var step = context.InvocationNumber % 4;
-            
+
             return step switch
             {
                 0 => await Http.Send(_userClient, Http.CreateRequest("GET", "/api/facilities")
                     .WithHeader("X-Customer-Id", UniqueCustomerId())),
-                
+
                 1 => await Http.Send(_userClient, Http.CreateRequest("GET", $"/api/facilities/{(context.InvocationNumber % 3) + 1}")
                     .WithHeader("X-Customer-Id", UniqueCustomerId())),
-                
+
                 2 => await Http.Send(_userClient, Http.CreateRequest("POST", "/api/availability/search")
                     .WithHeader("Content-Type", "application/json")
                     .WithHeader("X-Customer-Id", UniqueCustomerId())
                     .WithBody(new StringContent(
-                        JsonSerializer.Serialize(new { 
-                            facilityId = 1, 
-                            date = DateTime.UtcNow.AddDays(1).Date.ToString("yyyy-MM-dd") 
-                        }), 
+                        JsonSerializer.Serialize(new
+                        {
+                            facilityId = 1,
+                            date = DateTime.UtcNow.AddDays(1).Date.ToString("yyyy-MM-dd")
+                        }),
                         Encoding.UTF8, "application/json"))),
-                
+
                 _ => await Http.Send(_userClient, Http.CreateRequest("POST", "/api/availability/check")
                     .WithHeader("Content-Type", "application/json")
                     .WithHeader("X-Customer-Id", UniqueCustomerId())
                     .WithBody(new StringContent(
-                        JsonSerializer.Serialize(new { 
-                            facilityId = 1, 
+                        JsonSerializer.Serialize(new
+                        {
+                            facilityId = 1,
                             start = DateTime.UtcNow.AddDays(1).Date.AddHours(10).ToString("o"),
                             end = DateTime.UtcNow.AddDays(1).Date.AddHours(11).ToString("o")
-                        }), 
+                        }),
                         Encoding.UTF8, "application/json")))
             };
         })
@@ -807,19 +832,18 @@ public class ApiPerformanceTests : IDisposable
     [Fact]
     public void AdminWorkflow_Test()
     {
-        // Simulates admin operations: view all -> manage facilities -> view bookings
         var workflowScenario = Scenario.Create("admin_workflow", async context =>
         {
             var step = context.InvocationNumber % 3;
-            
+
             return step switch
             {
                 0 => await Http.Send(_adminClient, Http.CreateRequest("GET", "/api/customers")
                     .WithHeader("X-Customer-Id", UniqueCustomerId())),
-                
+
                 1 => await Http.Send(_adminClient, Http.CreateRequest("GET", "/api/bookings")
                     .WithHeader("X-Customer-Id", UniqueCustomerId())),
-                
+
                 _ => await Http.Send(_adminClient, Http.CreateRequest("GET", "/api/facilities")
                     .WithHeader("X-Customer-Id", UniqueCustomerId()))
             };
@@ -844,15 +868,13 @@ public class ApiPerformanceTests : IDisposable
     [Fact]
     public void ConcurrentBookingCreation_ConflictTest()
     {
-        // Multiple users trying to book the same slot - tests conflict handling
         var scenario = Scenario.Create("concurrent_booking_conflict", async context =>
         {
             var tomorrow = DateTime.UtcNow.AddDays(1).Date;
-            // All requests try to book the SAME slot (10:00-11:00)
             var requestBody = new
             {
                 facilityId = 1,
-                customerPublicId = Guid.NewGuid(), // Different customers
+                customerPublicId = Guid.NewGuid(),
                 start = tomorrow.AddHours(10).ToString("o"),
                 end = tomorrow.AddHours(11).ToString("o"),
                 playersCount = 2,
@@ -863,8 +885,8 @@ public class ApiPerformanceTests : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId())
                 .WithBody(new StringContent(
-                    JsonSerializer.Serialize(requestBody), 
-                    Encoding.UTF8, 
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
                     "application/json"));
 
             return await Http.Send(_adminClient, request);
@@ -879,9 +901,7 @@ public class ApiPerformanceTests : IDisposable
             .WithReportFolder("./reports/concurrent-booking-conflict")
             .Run();
 
-        // Most requests should fail due to conflicts or validation - that's expected
-        // We're testing that the system handles this gracefully without errors
-        Assert.True(stats.ScenarioStats[0].Ok.Latency.Percent99 < 5000, 
+        Assert.True(stats.ScenarioStats[0].Ok.Latency.Percent99 < 5000,
             "System should handle concurrent conflicts without timing out");
     }
 
@@ -902,8 +922,8 @@ public class ApiPerformanceTests : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithHeader("X-Customer-Id", UniqueCustomerId())
                 .WithBody(new StringContent(
-                    JsonSerializer.Serialize(requestBody), 
-                    Encoding.UTF8, 
+                    JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
                     "application/json"));
 
             return await Http.Send(_adminClient, request);
@@ -927,19 +947,13 @@ public class ApiPerformanceTests : IDisposable
 
     private static void AssertPerformance(ScenarioStats stats, double maxP95Latency, double maxFailRate)
     {
-        Assert.True(stats.Ok.Latency.Percent95 < maxP95Latency, 
+        Assert.True(stats.Ok.Latency.Percent95 < maxP95Latency,
             $"P95 latency ({stats.Ok.Latency.Percent95}ms) exceeds {maxP95Latency}ms");
-        
+
         var totalRequests = stats.Ok.Request.Count + stats.Fail.Request.Count;
         var failRate = totalRequests > 0 ? (double)stats.Fail.Request.Count / totalRequests : 0;
-        Assert.True(failRate < maxFailRate, 
+        Assert.True(failRate < maxFailRate,
             $"Fail rate ({failRate:P}) exceeds {maxFailRate:P}");
-    }
-
-    public void Dispose()
-    {
-        _adminClient.Dispose();
-        _userClient.Dispose();
     }
 
     #endregion

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SportsCenter.API.Extensions.Auth;
-using SportsCenter.API.Extensions.RateLimiterConfig;
 using SportsCenter.API.Extentions;
+using SportsCenter.API.Extentions.RateLimiterConfig;
 using SportsCenter.Infrastructure.Persistence;
 
 namespace SportsCenter.API;

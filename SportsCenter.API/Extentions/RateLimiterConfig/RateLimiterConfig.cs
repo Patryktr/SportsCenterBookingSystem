@@ -1,13 +1,9 @@
 ﻿using System.Threading.RateLimiting;
 
-namespace SportsCenter.API.Extensions.RateLimiterConfig;
+namespace SportsCenter.API.Extentions.RateLimiterConfig;
 
 public static class RateLimiterConfig
 {
-    /// <summary>
-    /// Rate limiter per customerId (route lub nagłówek).
-    /// Opcjonalnie globalny limiter na całe API.
-    /// </summary>
     public static IServiceCollection AddCustomRateLimiter(
         this IServiceCollection services,
         int permitLimit = 10,
@@ -72,15 +68,9 @@ public static class RateLimiterConfig
         return services;
     }
 
-    /// <summary>
-    /// customerId z:
-    /// 1) route {customerId}
-    /// 2) header X-Customer-Id
-    /// 3) IP (fallback)
-    /// </summary>
     private static string GetCustomerId(HttpContext ctx)
     {
-        // 1️⃣ route
+        // route
         if (ctx.Request.RouteValues.TryGetValue("customerId", out var rv) && rv is not null)
         {
             var val = rv.ToString();
@@ -88,12 +78,12 @@ public static class RateLimiterConfig
                 return val!;
         }
 
-        // 2️⃣ header
+        // header
         var header = ctx.Request.Headers["X-Customer-Id"].ToString();
         if (!string.IsNullOrWhiteSpace(header))
             return header;
 
-        // 3️⃣ IP fallback
+        // IP fallback
         var ip = ctx.Connection.RemoteIpAddress?.ToString();
         if (!string.IsNullOrWhiteSpace(ip))
             return $"ip:{ip}";
