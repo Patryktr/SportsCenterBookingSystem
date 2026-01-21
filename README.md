@@ -1,7 +1,7 @@
 <div align="center">
   <h1>SportsCenterBookingSystem</h1>
   <p>System rezerwacji obiektów sportowych</p>
-  <img src="assets/logo.png" width="350"/>
+  <img src="assets/logo.png" width=“600"/>
 </div>
 
 
