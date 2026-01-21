@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SportsCenter.API.Extensions.Auth;
 using SportsCenter.API.Extentions;
 using SportsCenter.API.Extentions.RateLimiterConfig;
+using SportsCenter.Application.Cache;
 using SportsCenter.Infrastructure.Persistence;
 
 namespace SportsCenter.API;
@@ -42,6 +43,13 @@ public class Program
         // Auth
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddApiAuth(builder.Configuration);
+
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = builder.Configuration.GetConnectionString("Redis");
+        });
+
+        builder.Services.AddSingleton<ICacheService, DistributedCacheService>();
 
         var app = builder.Build();
 
