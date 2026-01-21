@@ -1,13 +1,11 @@
-# SportsCenterBookingSystem
-
-### Wprowadzenie i cel projektu
+## Wprowadzenie i cel projektu
 Celem projektu było stworzenie kompleksowego systemu API przeznaczonego do zarządzania rezerwacjami obiektów sportowych skupionych w ramach jednego dużego kompleksu sportowego. Głównym celem aplikacji jest umożliwienie użytkownikom łatwego i szybkiego dokonywania rezerwacji na różne zajęcia sportowe (mecze w tenisa, padla, squasha, badmintona i piłkę nożną), przy jednoczesnym zapewnieniu administratorom placówki narzędzi do pełnej kontroli nad dostępnością i harmonogramem obiektów.
 
 System został zaprojektowany z myślą o wieloplatformowości, działa zatem w środowisku kontenerowym Docker, co umożliwia łatwe wdrażanie i skalowanie API w różnych środowiskach produkcyjnych. Wykorzystanie bazy danych SQL Server zapewnia przechowywanie informacji o użytkownikach, rezerwacjach oraz szczegółach harmonogramu i dostępności poszczególnych obiektów sportowych.
 
 ---
 
-### Wykorzystane technologie
+## Wykorzystane technologie
 API zostało zaimplementowane w technologii .NET 8 z wykorzystaniem MinimalAPI.
 
 Warstwa persystencji opiera się o Entity Framework Córę 9 z bazą danych SQL Server uruchomioną w środowisku kontenerowym Docker.
