@@ -2,7 +2,7 @@
   <img 
     src="assets/logo.png"
     alt="SportsCenterBookingSystem logo"
-    style="max-width: 600px; height: auto;"
+    style="max-width: 600px; height: 300px;"
   />
 </div>
 
