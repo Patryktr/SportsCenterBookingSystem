@@ -1,0 +1,780 @@
+{
+	"info": {
+		"_postman_id": "sportscenter-api-collection",
+		"name": "SportsCenter API",
+		"description": "Kolekcja zapytań do API systemu rezerwacji obiektów sportowych.\n\n## Autoryzacja\nAPI używa Basic Auth:\n- **User:** user / 123\n- **Admin:** admin / 123\n\n## Pierwsze kroki\n1. Ustaw zmienną `baseUrl` (domyślnie: http://localhost:5001)\n2. Wykonaj \"Get All Customers\" aby pobrać `customerPublicId`\n3. Skopiuj PublicId jednego z klientów do zmiennej `customerPublicId`",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "username",
+				"value": "admin",
+				"type": "string"
+			},
+			{
+				"key": "password",
+				"value": "123",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5001",
+			"type": "string"
+		},
+		{
+			"key": "customerPublicId",
+			"value": "UZUPELNIJ_PO_POBRANIU_LISTY_KLIENTOW",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Facilities",
+			"description": "Zarządzanie obiektami sportowymi (korty, boiska)",
+			"item": [
+				{
+					"name": "Get All Facilities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/facilities",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "facilities"]
+						},
+						"description": "Pobiera listę wszystkich obiektów sportowych.\n\nZwraca 11 obiektów z seeda:\n- Korty tenisowe (ID 1-3)\n- Boiska piłkarskie (ID 4-5)\n- Korty padel (ID 6-7)\n- Korty squash (ID 8-9)\n- Korty badminton (ID 10-11)"
+					}
+				},
+				{
+					"name": "Get Facility by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/facilities/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "facilities", "1"]
+						},
+						"description": "Pobiera szczegóły obiektu o ID=1 (Kort Tenisowy #1)"
+					}
+				},
+				{
+					"name": "Create Facility",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Kort Tenisowy #4 (nowy)\",\n  \"sportType\": 1,\n  \"maxPlayers\": 4,\n  \"pricePerHour\": 90.00,\n  \"minBookingDurationMinutes\": 60,\n  \"maxBookingDurationMinutes\": 180\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/facilities",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "facilities"]
+						},
+						"description": "Tworzy nowy obiekt sportowy.\n\n**SportType:**\n- 1 = Tennis\n- 2 = Football\n- 3 = Padel\n- 4 = Squash\n- 5 = Badminton"
+					}
+				},
+				{
+					"name": "Update Facility",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"name\": \"Kort Tenisowy #1 (Premium)\",\n  \"sportType\": 1,\n  \"maxPlayers\": 4,\n  \"pricePerHour\": 100.00,\n  \"minBookingDurationMinutes\": 60,\n  \"maxBookingDurationMinutes\": 240\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/facilities/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "facilities", "1"]
+						},
+						"description": "Aktualizuje obiekt o ID=1.\n\n**Uwaga:** ID w URL musi być zgodne z ID w body."
+					}
+				},
+				{
+					"name": "Delete Facility",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/facilities/11",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "facilities", "11"]
+						},
+						"description": "Usuwa obiekt o ID=11 (Kort Badminton #2 - nieaktywny).\n\n**Uwaga:** Nie można usunąć obiektu z aktywnymi rezerwacjami."
+					}
+				}
+			]
+		},
+		{
+			"name": "Customers",
+			"description": "Zarządzanie klientami",
+			"item": [
+				{
+					"name": "Get All Customers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Automatycznie zapisz pierwszy PublicId do zmiennej",
+									"var jsonData = pm.response.json();",
+									"if (jsonData && jsonData.length > 0) {",
+									"    pm.collectionVariables.set('customerPublicId', jsonData[0].publicId);",
+									"    console.log('Zapisano customerPublicId:', jsonData[0].publicId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers"]
+						},
+						"description": "Pobiera listę wszystkich klientów.\n\n**Ważne:** Po wykonaniu tego zapytania, zmienna `customerPublicId` zostanie automatycznie ustawiona na pierwszy wynik.\n\nKlienci z seeda:\n- Jan Kowalski\n- Anna Nowak\n- Piotr Wiśniewski\n- Maria Wójcik\n- Tomasz Kamiński\n- Katarzyna Lewandowska\n- Michał Zieliński\n- Agnieszka Szymańska"
+					}
+				},
+				{
+					"name": "Get Customer by PublicId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/customers/{{customerPublicId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers", "{{customerPublicId}}"]
+						},
+						"description": "Pobiera dane klienta po jego PublicId (GUID).\n\n**Wymagane:** Najpierw wykonaj \"Get All Customers\" aby ustawić zmienną `customerPublicId`."
+					}
+				},
+				{
+					"name": "Create Customer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Andrzej\",\n  \"lastName\": \"Testowy\",\n  \"email\": \"andrzej.testowy@email.pl\",\n  \"phone\": \"+48 500 600 700\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers"]
+						},
+						"description": "Tworzy nowego klienta.\n\n**Zwraca:** PublicId (GUID) nowo utworzonego klienta."
+					}
+				},
+				{
+					"name": "Update Customer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Jan\",\n  \"lastName\": \"Kowalski-Nowak\",\n  \"email\": \"jan.kowalski.nowak@email.pl\",\n  \"phone\": \"+48 600 100 999\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/customers/{{customerPublicId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers", "{{customerPublicId}}"]
+						},
+						"description": "Aktualizuje dane klienta.\n\n**Wymagane:** Ustaw zmienną `customerPublicId`."
+					}
+				},
+				{
+					"name": "Delete Customer",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/customers/{{customerPublicId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers", "{{customerPublicId}}"]
+						},
+						"description": "Usuwa klienta.\n\n**Uwaga:** Nie można usunąć klienta z aktywnymi rezerwacjami."
+					}
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"description": "Zarządzanie rezerwacjami",
+			"item": [
+				{
+					"name": "Get All Bookings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings"]
+						},
+						"description": "Pobiera listę wszystkich rezerwacji.\n\nRezerwacje z seeda zawierają:\n- Aktywne rezerwacje na różne obiekty\n- Jedną anulowaną rezerwację (dla demonstracji)"
+					}
+				},
+				{
+					"name": "Get Booking by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings", "1"]
+						},
+						"description": "Pobiera szczegóły rezerwacji o ID=1"
+					}
+				},
+				{
+					"name": "Create Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"facilityId\": 1,\n  \"customerPublicId\": \"{{customerPublicId}}\",\n  \"start\": \"2026-01-25T10:00:00Z\",\n  \"end\": \"2026-01-25T12:00:00Z\",\n  \"playersCount\": 2,\n  \"type\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings"]
+						},
+						"description": "Tworzy nową rezerwację.\n\n**Ważne:**\n- `start` i `end` muszą być pełnymi godzinami (np. 10:00, 11:00)\n- Data musi być w przyszłości\n- Sprawdzane są konflikty z innymi rezerwacjami\n\n**BookingType:**\n- 1 = Exclusive (wyłączny wynajem)\n- 2 = GroupClass (zajęcia grupowe)\n\n**Przed wykonaniem:** Zaktualizuj daty na przyszłe!"
+					}
+				},
+				{
+					"name": "Create Booking (jutro 14:00-16:00)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"facilityId\": 2,\n  \"customerPublicId\": \"{{customerPublicId}}\",\n  \"start\": \"{{$isoTimestamp}}\",\n  \"end\": \"{{$isoTimestamp}}\",\n  \"playersCount\": 4,\n  \"type\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings"]
+						},
+						"description": "**Uwaga:** Musisz ręcznie ustawić daty start/end na jutrzejszy dzień, pełne godziny.\n\nPrzykład dla jutro:\n- start: 2026-01-23T14:00:00Z\n- end: 2026-01-23T16:00:00Z"
+					}
+				},
+				{
+					"name": "Update Booking",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"start\": \"2026-01-25T15:00:00Z\",\n  \"end\": \"2026-01-25T17:00:00Z\",\n  \"playersCount\": 4\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings", "1"]
+						},
+						"description": "Aktualizuje rezerwację o ID=1.\n\n**Można zmienić:**\n- Datę/godzinę (start, end)\n- Liczbę graczy\n\n**Nie można zmienić:**\n- Obiektu (facilityId)\n- Klienta (customerId)"
+					}
+				},
+				{
+					"name": "Cancel Booking",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/1/cancel",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings", "1", "cancel"]
+						},
+						"description": "Anuluje rezerwację (soft delete - zmiana statusu).\n\n**Warunki:**\n- Minimum 1 godzina przed rozpoczęciem\n- Operacja idempotentna (powtórne wywołanie zwraca 204)\n\n**Kody odpowiedzi:**\n- 200 - Anulowano pomyślnie\n- 204 - Już wcześniej anulowana\n- 404 - Nie znaleziono\n- 409 - Za późno na anulowanie"
+					}
+				},
+				{
+					"name": "Delete Booking (hard delete)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings", "1"]
+						},
+						"description": "Trwale usuwa rezerwację z bazy danych.\n\n**Uwaga:** W przeciwieństwie do Cancel, ta operacja jest nieodwracalna."
+					}
+				}
+			]
+		},
+		{
+			"name": "Availability",
+			"description": "Sprawdzanie dostępności terminów",
+			"item": [
+				{
+					"name": "Check Availability",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"facilityId\": 1,\n  \"start\": \"2026-01-25T10:00:00Z\",\n  \"end\": \"2026-01-25T12:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/availability/check",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "availability", "check"]
+						},
+						"description": "Sprawdza czy konkretny termin jest dostępny.\n\n**Sprawdza:**\n- Czy obiekt istnieje i jest aktywny\n- Godziny otwarcia\n- Blokady terminów\n- Istniejące rezerwacje\n\n**Zwraca:**\n- `isAvailable`: true/false\n- `conflictReason`: powód niedostępności (jeśli dotyczy)"
+					}
+				},
+				{
+					"name": "Check Availability (konflikt)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"facilityId\": 1,\n  \"start\": \"2026-01-22T14:00:00Z\",\n  \"end\": \"2026-01-22T16:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/availability/check",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "availability", "check"]
+						},
+						"description": "Przykład sprawdzenia terminu, który koliduje z istniejącą rezerwacją z seeda.\n\n**Oczekiwany wynik:** `isAvailable: false`"
+					}
+				},
+				{
+					"name": "Search Available Slots",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"facilityId\": 1,\n  \"date\": \"2026-01-25\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/availability/search",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "availability", "search"]
+						},
+						"description": "Wyszukuje wszystkie dostępne sloty godzinowe w danym dniu.\n\n**Zwraca:**\n- Listę slotów (każdy 1-godzinny)\n- Status każdego slotu: Available, Booked, Blocked, Past\n- Podsumowanie: totalSlots, availableSlots, bookedSlots"
+					}
+				},
+				{
+					"name": "Search Available Slots (jutro)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"facilityId\": 1,\n  \"date\": \"2026-01-22\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/availability/search",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "availability", "search"]
+						},
+						"description": "Sprawdza dostępność na jutro - powinny być widoczne rezerwacje z seeda jako \"Booked\"."
+					}
+				}
+			]
+		},
+		{
+			"name": "Operating Hours",
+			"description": "Godziny otwarcia obiektów",
+			"item": [
+				{
+					"name": "Get Operating Hours",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/facilities/1/operating-hours",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "facilities", "1", "operating-hours"]
+						},
+						"description": "Pobiera godziny otwarcia dla obiektu o ID=1.\n\n**Domyślne godziny z seeda:**\n- Pn-Pt: 07:00 - 22:00\n- Sobota: 08:00 - 20:00\n- Niedziela: 09:00 - 18:00"
+					}
+				},
+				{
+					"name": "Set Operating Hours",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"schedule\": [\n    { \"dayOfWeek\": 1, \"openTime\": \"08:00\", \"closeTime\": \"21:00\", \"isClosed\": false },\n    { \"dayOfWeek\": 2, \"openTime\": \"08:00\", \"closeTime\": \"21:00\", \"isClosed\": false },\n    { \"dayOfWeek\": 3, \"openTime\": \"08:00\", \"closeTime\": \"21:00\", \"isClosed\": false },\n    { \"dayOfWeek\": 4, \"openTime\": \"08:00\", \"closeTime\": \"21:00\", \"isClosed\": false },\n    { \"dayOfWeek\": 5, \"openTime\": \"08:00\", \"closeTime\": \"21:00\", \"isClosed\": false },\n    { \"dayOfWeek\": 6, \"openTime\": \"09:00\", \"closeTime\": \"18:00\", \"isClosed\": false },\n    { \"dayOfWeek\": 0, \"openTime\": \"00:00\", \"closeTime\": \"00:00\", \"isClosed\": true }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/facilities/1/operating-hours?facilityId=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "facilities", "1", "operating-hours"],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Ustawia nowe godziny otwarcia dla obiektu.\n\n**DayOfWeek:**\n- 0 = Niedziela\n- 1 = Poniedziałek\n- 2 = Wtorek\n- 3 = Środa\n- 4 = Czwartek\n- 5 = Piątek\n- 6 = Sobota\n\n**Przykład:** Niedziela zamknięta (`isClosed: true`)"
+					}
+				}
+			]
+		},
+		{
+			"name": "Time Blocks",
+			"description": "Blokady terminów (przerwy techniczne, wydarzenia)",
+			"item": [
+				{
+					"name": "Get All Time Blocks",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/time-blocks",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "time-blocks"]
+						},
+						"description": "Pobiera listę wszystkich blokad terminów.\n\n**Blokady z seeda:**\n- Konserwacja nawierzchni (kort tenisowy)\n- Turniej Młodzieżowy (boisko)\n- Święto państwowe"
+					}
+				},
+				{
+					"name": "Get Time Blocks (filtered by facility)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/time-blocks?facilityId=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "time-blocks"],
+							"query": [
+								{
+									"key": "facilityId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Pobiera blokady tylko dla obiektu o ID=1"
+					}
+				},
+				{
+					"name": "Get Time Blocks (only active)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/time-blocks?activeOnly=true",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "time-blocks"],
+							"query": [
+								{
+									"key": "activeOnly",
+									"value": "true"
+								}
+							]
+						},
+						"description": "Pobiera tylko aktywne blokady"
+					}
+				},
+				{
+					"name": "Create Time Block",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"facilityId\": 2,\n  \"blockType\": 1,\n  \"startTime\": \"2026-01-26T08:00:00Z\",\n  \"endTime\": \"2026-01-26T14:00:00Z\",\n  \"reason\": \"Wymiana siatki na bramkach\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/time-blocks",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "time-blocks"]
+						},
+						"description": "Tworzy nową blokadę terminu.\n\n**BlockType:**\n- 1 = Maintenance (przerwa techniczna)\n- 2 = SpecialEvent (wydarzenie specjalne)\n- 3 = Holiday (dzień wolny)\n- 4 = Other (inne)"
+					}
+				},
+				{
+					"name": "Delete Time Block",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/time-blocks/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "time-blocks", "1"]
+						},
+						"description": "Usuwa blokadę o ID=1"
+					}
+				}
+			]
+		},
+		{
+			"name": "Test Scenarios",
+			"description": "Scenariusze testowe demonstrujące funkcjonalności",
+			"item": [
+				{
+					"name": "Scenario: Pełny cykl rezerwacji",
+					"item": [
+						{
+							"name": "1. Sprawdź dostępne obiekty",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/facilities",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "facilities"]
+								}
+							}
+						},
+						{
+							"name": "2. Wyszukaj wolne sloty",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"facilityId\": 1,\n  \"date\": \"2026-01-27\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/availability/search",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "availability", "search"]
+								}
+							}
+						},
+						{
+							"name": "3. Sprawdź konkretny termin",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"facilityId\": 1,\n  \"start\": \"2026-01-27T10:00:00Z\",\n  \"end\": \"2026-01-27T12:00:00Z\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/availability/check",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "availability", "check"]
+								}
+							}
+						},
+						{
+							"name": "4. Utwórz rezerwację",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"facilityId\": 1,\n  \"customerPublicId\": \"{{customerPublicId}}\",\n  \"start\": \"2026-01-27T10:00:00Z\",\n  \"end\": \"2026-01-27T12:00:00Z\",\n  \"playersCount\": 2,\n  \"type\": 1\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/bookings",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "bookings"]
+								}
+							}
+						},
+						{
+							"name": "5. Sprawdź że termin jest zajęty",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"facilityId\": 1,\n  \"start\": \"2026-01-27T11:00:00Z\",\n  \"end\": \"2026-01-27T13:00:00Z\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/availability/check",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "availability", "check"]
+								},
+								"description": "Powinno zwrócić `isAvailable: false` - termin koliduje z rezerwacją z kroku 4."
+							}
+						}
+					]
+				},
+				{
+					"name": "Scenario: Walidacja błędów",
+					"item": [
+						{
+							"name": "Błąd: Rezerwacja nie na pełną godzinę",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"facilityId\": 1,\n  \"customerPublicId\": \"{{customerPublicId}}\",\n  \"start\": \"2026-01-28T10:30:00Z\",\n  \"end\": \"2026-01-28T12:00:00Z\",\n  \"playersCount\": 2,\n  \"type\": 1\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/bookings",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "bookings"]
+								},
+								"description": "Oczekiwany błąd: \"Rezerwacja musi rozpoczynać się o pełnej godzinie\""
+							}
+						},
+						{
+							"name": "Błąd: Za dużo graczy",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"facilityId\": 1,\n  \"customerPublicId\": \"{{customerPublicId}}\",\n  \"start\": \"2026-01-28T10:00:00Z\",\n  \"end\": \"2026-01-28T12:00:00Z\",\n  \"playersCount\": 50,\n  \"type\": 1\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/bookings",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "bookings"]
+								},
+								"description": "Oczekiwany błąd: \"Maksymalna liczba graczy dla tego obiektu to 4\""
+							}
+						},
+						{
+							"name": "Błąd: Nieistniejący obiekt",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/facilities/999",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "facilities", "999"]
+								},
+								"description": "Oczekiwany status: 404 Not Found"
+							}
+						},
+						{
+							"name": "Błąd: Nieistniejący klient",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"facilityId\": 1,\n  \"customerPublicId\": \"00000000-0000-0000-0000-000000000000\",\n  \"start\": \"2026-01-28T10:00:00Z\",\n  \"end\": \"2026-01-28T12:00:00Z\",\n  \"playersCount\": 2,\n  \"type\": 1\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/bookings",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "bookings"]
+								},
+								"description": "Oczekiwany błąd: \"Klient nie istnieje\""
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}
