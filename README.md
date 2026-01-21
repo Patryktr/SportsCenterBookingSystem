@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="assets/logo.png" alt="SportsCenterBookingSystem logo" width="400"/>
+</p>
+
+
 ## Wprowadzenie i cel projektu
 Celem projektu było stworzenie kompleksowego systemu API przeznaczonego do zarządzania rezerwacjami obiektów sportowych skupionych w ramach jednego dużego kompleksu sportowego. Głównym celem aplikacji jest umożliwienie użytkownikom łatwego i szybkiego dokonywania rezerwacji na różne zajęcia sportowe (mecze w tenisa, padla, squasha, badmintona i piłkę nożną), przy jednoczesnym zapewnieniu administratorom placówki narzędzi do pełnej kontroli nad dostępnością i harmonogramem obiektów.
 
